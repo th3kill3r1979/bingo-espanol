@@ -1,0 +1,11 @@
+# Dockerignore file for Cloud Run
+node_modules
+npm-debug.log
+.git
+.gitignore
+README.md
+DEPLOYMENT.md
+SECURITY.md
+.vscode
+.idea
+*.md
