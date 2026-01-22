@@ -274,20 +274,61 @@
 
         // Animate new ball
         function animateNewBall(ball) {
-            // Pulse animation on last ball display
-            lastBallContainer.classList.add('pulse-scale');
-            setTimeout(() => {
-                lastBallContainer.classList.remove('pulse-scale');
-            }, 1000);
+            // Show container if hidden (first ball)
+            lastBallContainer.classList.remove('hidden');
+            waitingMessage.classList.add('hidden');
 
-            // Highlight the ball in the grid
+            // 1. Start Rolling Animation
+            let rollDuration = 2000; // 2 seconds
+            let stepTime = 50; // Change number every 50ms
+            let steps = rollDuration / stepTime;
+            let currentStep = 0;
+
+            // Add motion effects
+            lastBallEl.classList.add('animate-blur-motion', 'text-gray-200');
+            lastBallEl.classList.remove('text-white', 'text-shadow-glow');
+
+            const rollInterval = setInterval(() => {
+                currentStep++;
+
+                // Show random number
+                const randomNum = Math.floor(Math.random() * 90) + 1;
+                lastBallEl.textContent = randomNum;
+
+                // Stop rolling
+                if (currentStep >= steps) {
+                    clearInterval(rollInterval);
+                    revealFinalBall(ball);
+                }
+            }, stepTime);
+        }
+
+        function revealFinalBall(ball) {
+            // 2. Reveal Final Number
+            lastBallEl.textContent = ball;
+
+            // Remove blur, add glow and pop
+            lastBallEl.classList.remove('animate-blur-motion', 'text-gray-200');
+            lastBallEl.classList.add('text-white', 'text-shadow-glow', 'scale-125', 'transition-transform', 'duration-300'); // Scale up
+
+            setTimeout(() => {
+                lastBallEl.classList.remove('scale-125'); // Scale back to normal
+            }, 300);
+
+            // 3. Highlight grid
+            highlightGrid(ball);
+        }
+
+        function highlightGrid(ball) {
             const ballEl = document.getElementById(`ball-${ball}`);
-            ballEl.classList.add('ring-4', 'ring-yellow-300', 'ring-offset-4', 'ring-offset-purple-900');
+            if (ballEl) {
+                ballEl.classList.add('ring-4', 'ring-yellow-300', 'ring-offset-4', 'ring-offset-purple-900', 'z-10');
+                setTimeout(() => {
+                    ballEl.classList.remove('ring-4', 'ring-yellow-300', 'ring-offset-4', 'ring-offset-purple-900', 'z-10');
+                }, 3000);
 
-            // Remove highlight after 3 seconds
-            setTimeout(() => {
-                ballEl.classList.remove('ring-4', 'ring-yellow-300', 'ring-offset-4', 'ring-offset-purple-900');
-            }, 3000);
+                // Permanent highlight update is handled by updateDisplay() loop, but visual pulse here helps
+            }
         }
 
         // Initialize on load
