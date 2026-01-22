@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pantalla Pública - Bingo Español</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="/socket.io/socket.io.js"></script>
+    <link rel="stylesheet" href="/styles.css">
+</head>
+
+<body class="bg-gradient-to-br from-indigo-900 via-purple-900 to-pink-900 min-h-screen text-white overflow-hidden">
+    <div class="container mx-auto px-8 py-6 h-screen flex flex-col">
+        <!-- Header -->
+        <header class="text-center mb-6">
+            <h1
+                class="text-6xl font-black mb-2 bg-gradient-to-r from-yellow-300 via-orange-400 to-red-500 bg-clip-text text-transparent drop-shadow-lg">
+                🎰 BINGO ESPAÑOL
+            </h1>
+            <p class="text-2xl text-gray-200 font-semibold">90 Bolas</p>
+        </header>
+
+        <div class="flex-1 grid grid-cols-1 lg:grid-cols-3 gap-6">
+            <!-- Last Ball Display (Large) -->
+            <div class="lg:col-span-1 flex items-center justify-center">
+                <div class="text-center">
+                    <p class="text-3xl font-bold mb-4 text-yellow-300">ÚLTIMA BOLA</p>
+                    <div id="lastBallContainer"
+                        class="bg-gradient-to-br from-yellow-400 via-orange-500 to-red-500 rounded-3xl p-12 shadow-2xl border-8 border-white/30 transform transition-all duration-500 hidden">
+                        <span id="lastBall"
+                            class="text-[12rem] font-black text-white drop-shadow-2xl leading-none block">-</span>
+                    </div>
+                    <p id="waitingMessage" class="text-2xl text-gray-300 mt-8">Esperando primera bola...</p>
+                </div>
+            </div>
+
+            <!-- Number Grid (1-90) -->
+            <div class="lg:col-span-2">
+                <div class="bg-white/10 backdrop-blur-lg rounded-3xl p-6 border border-white/20 shadow-2xl h-full">
+                    <h2 class="text-3xl font-bold mb-4 text-center">Tablero General</h2>
+
+                    <div id="numberGrid" class="grid grid-cols-10 gap-2 h-[calc(100%-4rem)]">
+                        <!-- Numbers 1-90 will be generated here -->
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const socket = io();
+        let drawnBalls = [];
+
+        // DOM Elements
+        const lastBallEl = document.getElementById('lastBall');
+        const lastBallContainer = document.getElementById('lastBallContainer');
+        const waitingMessage = document.getElementById('waitingMessage');
+        const numberGridEl = document.getElementById('numberGrid');
+
+        // Initialize number grid (1-90)
+        function initializeGrid() {
+            numberGridEl.innerHTML = '';
+
+            for (let i = 1; i <= 90; i++) {
+                const numberEl = document.createElement('div');
+                numberEl.id = `ball-${i}`;
+                numberEl.className = 'aspect-square rounded-xl flex items-center justify-center font-bold text-2xl transition-all duration-300 bg-white/20 text-gray-400';
+                numberEl.textContent = i;
+                numberGridEl.appendChild(numberEl);
+            }
+        }
+
+        // Initialize game state
+        socket.on('game-state', (data) => {
+            drawnBalls = data.drawnBalls;
+            updateDisplay();
+        });
+
+        // Ball drawn event
+        socket.on('ball-drawn', (data) => {
+            drawnBalls = data.drawnBalls;
+            updateDisplay();
+            animateNewBall(data.ball);
+        });
+
+        // Game reset event
+        socket.on('game-reset', () => {
+            drawnBalls = [];
+            lastBallContainer.classList.add('hidden');
+            waitingMessage.classList.remove('hidden');
+            updateDisplay();
+        });
+
+        // Update display
+        function updateDisplay() {
+            // Update grid
+            for (let i = 1; i <= 90; i++) {
+                const ballEl = document.getElementById(`ball-${i}`);
+                if (drawnBalls.includes(i)) {
+                    ballEl.className = 'aspect-square rounded-xl flex items-center justify-center font-bold text-2xl transition-all duration-300 bg-gradient-to-br from-green-400 to-emerald-500 text-white shadow-lg transform scale-105';
+                } else {
+                    ballEl.className = 'aspect-square rounded-xl flex items-center justify-center font-bold text-2xl transition-all duration-300 bg-white/20 text-gray-400';
+                }
+            }
+
+            // Update last ball
+            if (drawnBalls.length > 0) {
+                const latestBall = drawnBalls[drawnBalls.length - 1];
+                lastBallEl.textContent = latestBall;
+                lastBallContainer.classList.remove('hidden');
+                waitingMessage.classList.add('hidden');
+            }
+        }
+
+        // Animate new ball
+        function animateNewBall(ball) {
+            // Pulse animation on last ball display
+            lastBallContainer.classList.add('pulse-scale');
+            setTimeout(() => {
+                lastBallContainer.classList.remove('pulse-scale');
+            }, 1000);
+
+            // Highlight the ball in the grid
+            const ballEl = document.getElementById(`ball-${ball}`);
+            ballEl.classList.add('ring-4', 'ring-yellow-300', 'ring-offset-4', 'ring-offset-purple-900');
+
+            // Remove highlight after 3 seconds
+            setTimeout(() => {
+                ballEl.classList.remove('ring-4', 'ring-yellow-300', 'ring-offset-4', 'ring-offset-purple-900');
+            }, 3000);
+        }
+
+        // Initialize on load
+        initializeGrid();
+    </script>
+</body>
+
+</html>

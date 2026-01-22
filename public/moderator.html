@@ -1,0 +1,322 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Panel del Moderador - Bingo Español</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="/socket.io/socket.io.js"></script>
+  <link rel="stylesheet" href="/styles.css">
+</head>
+
+<body class="bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900 min-h-screen text-white">
+  <div class="container mx-auto px-4 py-8 max-w-7xl">
+    <!-- Header -->
+    <header class="text-center mb-8">
+      <h1 class="text-5xl font-bold mb-2 bg-gradient-to-r from-yellow-400 to-orange-500 bg-clip-text text-transparent">
+        🎰 Panel del Moderador
+      </h1>
+      <p class="text-gray-300 text-lg">Bingo Español - 90 Bolas</p>
+      <p class="text-sm text-gray-400 mt-2">ID del Juego: <span id="gameId" class="font-mono text-yellow-400">-</span>
+      </p>
+    </header>
+
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+      <!-- Left Column: Controls & QR -->
+      <div class="lg:col-span-1 space-y-6">
+        <!-- QR Code Card -->
+        <div class="bg-white/10 backdrop-blur-lg rounded-2xl p-6 border border-white/20 shadow-2xl">
+          <h2 class="text-2xl font-bold mb-4 text-center">Código QR</h2>
+          <div class="bg-white rounded-xl p-4 flex items-center justify-center">
+            <img id="qrCode" src="" alt="QR Code" class="w-full max-w-xs">
+          </div>
+          <p class="text-sm text-gray-300 text-center mt-3">Escanea para unirte al juego</p>
+        </div>
+
+        <!-- Control Buttons -->
+        <div class="bg-white/10 backdrop-blur-lg rounded-2xl p-6 border border-white/20 shadow-2xl space-y-4">
+          <button id="drawBallBtn"
+            class="w-full bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 text-white font-bold py-4 px-6 rounded-xl shadow-lg transform transition hover:scale-105 active:scale-95 text-xl">
+            🎱 Sacar Bola
+          </button>
+
+          <button id="resetGameBtn"
+            class="w-full bg-gradient-to-r from-red-500 to-rose-600 hover:from-red-600 hover:to-rose-700 text-white font-bold py-3 px-6 rounded-xl shadow-lg transform transition hover:scale-105 active:scale-95">
+            🔄 Reiniciar Juego
+          </button>
+        </div>
+
+        <!-- Stats -->
+        <div class="bg-white/10 backdrop-blur-lg rounded-2xl p-6 border border-white/20 shadow-2xl">
+          <h3 class="text-xl font-bold mb-3">Estadísticas</h3>
+          <div class="space-y-2">
+            <div class="flex justify-between">
+              <span class="text-gray-300">Bolas Extraídas:</span>
+              <span id="ballCount" class="font-bold text-yellow-400">0</span>
+            </div>
+            <div class="flex justify-between">
+              <span class="text-gray-300">Bolas Restantes:</span>
+              <span id="ballsRemaining" class="font-bold text-green-400">90</span>
+            </div>
+            <div class="flex justify-between">
+              <span class="text-gray-300">Cartones Activos:</span>
+              <span id="activeCards" class="font-bold text-blue-400">0</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Middle Column: Ball History -->
+      <div class="lg:col-span-1">
+        <div class="bg-white/10 backdrop-blur-lg rounded-2xl p-6 border border-white/20 shadow-2xl h-full">
+          <h2 class="text-2xl font-bold mb-4">Historial de Bolas</h2>
+
+          <!-- Last Ball -->
+          <div id="lastBallContainer" class="mb-6 hidden">
+            <p class="text-sm text-gray-300 mb-2">Última Bola:</p>
+            <div class="bg-gradient-to-br from-yellow-400 to-orange-500 rounded-2xl p-8 text-center shadow-xl">
+              <span id="lastBall" class="text-7xl font-black text-white drop-shadow-lg">-</span>
+            </div>
+          </div>
+
+          <!-- Ball List -->
+          <div class="max-h-96 overflow-y-auto custom-scrollbar">
+            <div id="ballHistory" class="grid grid-cols-5 gap-2">
+              <!-- Balls will be added here dynamically -->
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Right Column: Card Validator -->
+      <div class="lg:col-span-1">
+        <div class="bg-white/10 backdrop-blur-lg rounded-2xl p-6 border border-white/20 shadow-2xl">
+          <h2 class="text-2xl font-bold mb-4">Validador de Cartón</h2>
+
+          <div class="space-y-4">
+            <div>
+              <label for="serialInput" class="block text-sm font-medium text-gray-300 mb-2">
+                Número de Serie:
+              </label>
+              <input type="text" id="serialInput" placeholder="Ej: 1234" maxlength="4"
+                class="w-full px-4 py-3 bg-white/20 border border-white/30 rounded-xl text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-yellow-400 focus:border-transparent">
+            </div>
+
+            <button id="validateBtn"
+              class="w-full bg-gradient-to-r from-blue-500 to-cyan-600 hover:from-blue-600 hover:to-cyan-700 text-white font-bold py-3 px-6 rounded-xl shadow-lg transform transition hover:scale-105 active:scale-95">
+              ✓ Validar Cartón
+            </button>
+          </div>
+
+          <!-- Validation Result -->
+          <div id="validationResult" class="mt-6 hidden">
+            <h3 class="text-lg font-bold mb-3">Resultado:</h3>
+            <div class="bg-white/20 rounded-xl p-4">
+              <p class="text-xs text-gray-300 mb-2">Serie: <span id="validatedSerial"
+                  class="font-mono text-yellow-400"></span></p>
+
+              <!-- Bingo Card Grid -->
+              <div id="validatedCard" class="space-y-1">
+                <!-- Card will be rendered here -->
+              </div>
+
+
+              <div class="mt-3 pt-3 border-t border-white/20 space-y-2">
+                <p class="text-sm">
+                  <span class="text-green-400 font-bold" id="matchCount">0</span> números acertados
+                </p>
+
+                <!-- Line Status -->
+                <div id="lineStatus" class="hidden">
+                  <p class="text-sm font-bold text-yellow-400">🎯 ¡LÍNEA!</p>
+                  <p class="text-xs text-gray-300">Fila(s): <span id="lineRows"></span></p>
+                </div>
+
+                <!-- Bingo Status -->
+                <div id="bingoStatus" class="hidden">
+                  <p class="text-lg font-black text-green-400 animate-pulse">🏆 ¡¡BINGO!!</p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const socket = io();
+    let currentGameId = '';
+    let drawnBalls = [];
+
+    // DOM Elements
+    const gameIdEl = document.getElementById('gameId');
+    const qrCodeEl = document.getElementById('qrCode');
+    const drawBallBtn = document.getElementById('drawBallBtn');
+    const resetGameBtn = document.getElementById('resetGameBtn');
+    const ballHistoryEl = document.getElementById('ballHistory');
+    const lastBallEl = document.getElementById('lastBall');
+    const lastBallContainer = document.getElementById('lastBallContainer');
+    const ballCountEl = document.getElementById('ballCount');
+    const ballsRemainingEl = document.getElementById('ballsRemaining');
+    const serialInput = document.getElementById('serialInput');
+    const validateBtn = document.getElementById('validateBtn');
+    const validationResult = document.getElementById('validationResult');
+    const validatedSerial = document.getElementById('validatedSerial');
+    const validatedCard = document.getElementById('validatedCard');
+    const matchCount = document.getElementById('matchCount');
+
+    // Initialize game state
+    socket.on('game-state', (data) => {
+      currentGameId = data.gameId;
+      drawnBalls = data.drawnBalls;
+      gameIdEl.textContent = data.gameId;
+
+      if (data.qrCodeUrl) {
+        qrCodeEl.src = data.qrCodeUrl;
+      }
+
+      updateBallHistory();
+      updateStats();
+    });
+
+    // Draw ball button
+    drawBallBtn.addEventListener('click', () => {
+      socket.emit('draw-ball');
+    });
+
+    // Reset game button
+    resetGameBtn.addEventListener('click', () => {
+      if (confirm('¿Estás seguro de que deseas reiniciar el juego? Todos los cartones actuales quedarán inválidos.')) {
+        socket.emit('reset-game');
+      }
+    });
+
+    // Validate card button
+    validateBtn.addEventListener('click', () => {
+      const serial = serialInput.value.trim();
+      if (serial) {
+        socket.emit('validate-card', { serialNumber: serial });
+      }
+    });
+
+    // Ball drawn event
+    socket.on('ball-drawn', (data) => {
+      drawnBalls = data.drawnBalls;
+      updateBallHistory();
+      updateStats();
+
+      // Show last ball with animation
+      lastBallContainer.classList.remove('hidden');
+      lastBallEl.textContent = data.ball;
+      lastBallEl.classList.add('pulse-once');
+      setTimeout(() => lastBallEl.classList.remove('pulse-once'), 1000);
+    });
+
+    // Game reset event
+    socket.on('game-reset', (data) => {
+      currentGameId = data.gameId;
+      drawnBalls = [];
+      gameIdEl.textContent = data.gameId;
+
+      if (data.qrCodeUrl) {
+        qrCodeEl.src = data.qrCodeUrl;
+      }
+
+      ballHistoryEl.innerHTML = '';
+      lastBallContainer.classList.add('hidden');
+      validationResult.classList.add('hidden');
+      serialInput.value = '';
+      updateStats();
+    });
+
+    // Card validated event
+    socket.on('card-validated', (data) => {
+      validatedSerial.textContent = data.serialNumber;
+      renderValidatedCard(data);
+      matchCount.textContent = data.matches.length;
+
+      // Show line status
+      const lineStatus = document.getElementById('lineStatus');
+      const lineRows = document.getElementById('lineRows');
+      if (data.lines && data.lines.length > 0) {
+        lineStatus.classList.remove('hidden');
+        lineRows.textContent = data.lines.map(r => r + 1).join(', ');
+      } else {
+        lineStatus.classList.add('hidden');
+      }
+
+      // Show bingo status
+      const bingoStatus = document.getElementById('bingoStatus');
+      if (data.hasBingo) {
+        bingoStatus.classList.remove('hidden');
+      } else {
+        bingoStatus.classList.add('hidden');
+      }
+
+      validationResult.classList.remove('hidden');
+    });
+
+    // Error handling
+    socket.on('error', (data) => {
+      alert(data.message);
+    });
+
+    // Update ball history display
+    function updateBallHistory() {
+      ballHistoryEl.innerHTML = '';
+
+      // Show in reverse order (newest first)
+      const reversedBalls = [...drawnBalls].reverse();
+
+      reversedBalls.forEach((ball, index) => {
+        const ballEl = document.createElement('div');
+        ballEl.className = 'bg-gradient-to-br from-yellow-400 to-orange-500 rounded-lg p-3 text-center shadow-md';
+        if (index === 0) {
+          ballEl.classList.add('ring-2', 'ring-white', 'ring-offset-2', 'ring-offset-purple-900');
+        }
+        ballEl.innerHTML = `<span class="text-2xl font-bold text-white">${ball}</span>`;
+        ballHistoryEl.appendChild(ballEl);
+      });
+    }
+
+    // Update statistics
+    function updateStats() {
+      ballCountEl.textContent = drawnBalls.length;
+      ballsRemainingEl.textContent = 90 - drawnBalls.length;
+    }
+
+    // Render validated card
+    function renderValidatedCard(validation) {
+      validatedCard.innerHTML = '';
+
+      for (let row = 0; row < 3; row++) {
+        const rowEl = document.createElement('div');
+        rowEl.className = 'grid grid-cols-9 gap-1';
+
+        for (let col = 0; col < 9; col++) {
+          const cellEl = document.createElement('div');
+          const number = validation.matrix[row][col];
+
+          if (number === null) {
+            cellEl.className = 'bg-gray-700/50 rounded aspect-square flex items-center justify-center';
+          } else {
+            const isMatch = validation.matches.some(m => m.row === row && m.col === col);
+            cellEl.className = `rounded aspect-square flex items-center justify-center font-bold text-xs ${isMatch
+                ? 'bg-green-500 text-white ring-2 ring-green-300'
+                : 'bg-white/30 text-white'
+              }`;
+            cellEl.textContent = number;
+          }
+
+          rowEl.appendChild(cellEl);
+        }
+
+        validatedCard.appendChild(rowEl);
+      }
+    }
+  </script>
+</body>
+
+</html>

@@ -1,0 +1,321 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mi Cartón - Bingo Español</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="/socket.io/socket.io.js"></script>
+    <link rel="stylesheet" href="/styles.css">
+</head>
+
+<body class="bg-gradient-to-br from-blue-900 via-indigo-900 to-purple-900 min-h-screen text-white">
+    <div class="container mx-auto px-4 py-6 max-w-2xl">
+        <!-- Header -->
+        <header class="text-center mb-4">
+            <h1
+                class="text-4xl font-bold mb-2 bg-gradient-to-r from-yellow-300 to-orange-400 bg-clip-text text-transparent">
+                🎰 Mi Cartón de Bingo
+            </h1>
+            <p class="text-sm text-gray-300">Toca los números para marcarlos</p>
+        </header>
+
+        <!-- Game Status -->
+        <div id="gameStatus" class="mb-4 text-center">
+            <p class="text-xs text-gray-400">ID del Juego: <span id="gameId" class="font-mono text-yellow-400">-</span>
+            </p>
+        </div>
+
+        <!-- Invalid Game Message -->
+        <div id="invalidMessage" class="hidden mb-6 bg-red-500/20 border border-red-500 rounded-xl p-4 text-center">
+            <p class="text-lg font-bold text-red-300">⚠️ Juego Reiniciado</p>
+            <p class="text-sm text-gray-300 mt-2">Este cartón ya no es válido. Por favor, recarga la página para obtener
+                un nuevo cartón.</p>
+            <button onclick="location.reload()"
+                class="mt-3 bg-red-500 hover:bg-red-600 text-white font-bold py-2 px-6 rounded-lg">
+                Recargar Página
+            </button>
+        </div>
+
+        <!-- Style Selector -->
+        <div class="mb-4 flex justify-center gap-2">
+            <button id="styleModern"
+                class="style-btn px-4 py-2 rounded-lg font-semibold transition-all bg-purple-600 text-white">
+                🎨 Moderno
+            </button>
+            <button id="styleClassic"
+                class="style-btn px-4 py-2 rounded-lg font-semibold transition-all bg-white/20 text-gray-300 hover:bg-white/30">
+                📋 Clásico
+            </button>
+        </div>
+
+        <!-- Bingo Card -->
+        <div id="bingoCardContainer"
+            class="bg-white/10 backdrop-blur-lg rounded-2xl p-6 border border-white/20 shadow-2xl mb-6">
+            <!-- Serial Number -->
+            <div class="mb-4 text-center">
+                <p class="text-xs text-gray-400">Número de Serie:</p>
+                <p id="serialNumber" class="font-mono text-2xl font-bold text-yellow-400">-</p>
+            </div>
+
+            <!-- Card Grid (3x9) -->
+            <div id="bingoCard" class="space-y-2">
+                <!-- Card will be rendered here -->
+            </div>
+        </div>
+
+        <!-- Instructions -->
+        <div class="bg-white/10 backdrop-blur-lg rounded-xl p-4 border border-white/20">
+            <h3 class="font-bold mb-2 text-center">📋 Instrucciones</h3>
+            <ul class="text-sm text-gray-300 space-y-1">
+                <li>✓ Toca un número para colocar una ficha</li>
+                <li>✓ Toca una ficha para quitarla</li>
+                <li>✓ Los números marcados se guardan automáticamente</li>
+                <li>✓ Muestra este número de serie al moderador para validar tu cartón</li>
+            </ul>
+        </div>
+
+        <!-- Loading State -->
+        <div id="loadingState" class="text-center py-12">
+            <div class="inline-block animate-spin rounded-full h-12 w-12 border-4 border-white/30 border-t-yellow-400">
+            </div>
+            <p class="mt-4 text-gray-300">Cargando tu cartón...</p>
+        </div>
+    </div>
+
+    <script>
+        const socket = io();
+        let myCard = null;
+        let currentGameId = '';
+        let markedNumbers = new Set();
+        let currentStyle = 'modern'; // 'modern' or 'classic'
+
+        // DOM Elements
+        const gameIdEl = document.getElementById('gameId');
+        const serialNumberEl = document.getElementById('serialNumber');
+        const bingoCardEl = document.getElementById('bingoCard');
+        const bingoCardContainer = document.getElementById('bingoCardContainer');
+        const loadingState = document.getElementById('loadingState');
+        const invalidMessage = document.getElementById('invalidMessage');
+        const styleModernBtn = document.getElementById('styleModern');
+        const styleClassicBtn = document.getElementById('styleClassic');
+
+        // Style selector
+        styleModernBtn.addEventListener('click', () => {
+            currentStyle = 'modern';
+            updateStyleButtons();
+            renderCard();
+        });
+
+        styleClassicBtn.addEventListener('click', () => {
+            currentStyle = 'classic';
+            updateStyleButtons();
+            renderCard();
+        });
+
+        function updateStyleButtons() {
+            if (currentStyle === 'modern') {
+                styleModernBtn.className = 'style-btn px-4 py-2 rounded-lg font-semibold transition-all bg-purple-600 text-white';
+                styleClassicBtn.className = 'style-btn px-4 py-2 rounded-lg font-semibold transition-all bg-white/20 text-gray-300 hover:bg-white/30';
+            } else {
+                styleModernBtn.className = 'style-btn px-4 py-2 rounded-lg font-semibold transition-all bg-white/20 text-gray-300 hover:bg-white/30';
+                styleClassicBtn.className = 'style-btn px-4 py-2 rounded-lg font-semibold transition-all bg-purple-600 text-white';
+            }
+        }
+
+        // Request a card when connected
+        socket.on('connect', () => {
+            socket.emit('request-card');
+        });
+
+        // Receive assigned card
+        socket.on('card-assigned', (data) => {
+            currentGameId = data.gameId;
+            myCard = data.card;
+
+            gameIdEl.textContent = data.gameId;
+            serialNumberEl.textContent = data.card.serialNumber;
+
+            // Load marked numbers from sessionStorage
+            loadMarkedNumbers();
+
+            // Render the card
+            renderCard();
+
+            // Show card, hide loading
+            loadingState.classList.add('hidden');
+            bingoCardContainer.classList.remove('hidden');
+        });
+
+        // Game reset event
+        socket.on('game-reset', (data) => {
+            // Show invalid message if the game ID changed
+            if (data.gameId !== currentGameId) {
+                invalidMessage.classList.remove('hidden');
+                bingoCardContainer.classList.add('opacity-50', 'pointer-events-none');
+            }
+        });
+
+        // Render the bingo card
+        function renderCard() {
+            if (!myCard) return;
+
+            bingoCardEl.innerHTML = '';
+
+            if (currentStyle === 'modern') {
+                renderModernCard();
+            } else {
+                renderClassicCard();
+            }
+        }
+
+        // Modern style (original)
+        function renderModernCard() {
+            for (let row = 0; row < 3; row++) {
+                const rowEl = document.createElement('div');
+                rowEl.className = 'grid grid-cols-9 gap-2';
+
+                for (let col = 0; col < 9; col++) {
+                    const cellEl = document.createElement('div');
+                    const number = myCard.matrix[row][col];
+
+                    if (number === null) {
+                        // Empty space
+                        cellEl.className = 'aspect-square rounded-lg bg-gray-700/30 border border-gray-600/50';
+                    } else {
+                        // Number cell
+                        const isMarked = markedNumbers.has(number);
+                        cellEl.className = `aspect-square rounded-lg flex items-center justify-center font-bold text-xl cursor-pointer transition-all duration-200 active:scale-95 relative ${isMarked
+                            ? 'bg-white/90 text-gray-900 shadow-lg'
+                            : 'bg-white/20 text-white border-2 border-white/40 hover:bg-white/30'
+                            }`;
+
+                        // Number text
+                        const numberSpan = document.createElement('span');
+                        numberSpan.textContent = number;
+                        numberSpan.className = 'relative z-10';
+                        cellEl.appendChild(numberSpan);
+
+                        // Chip overlay (if marked)
+                        if (isMarked) {
+                            const chip = document.createElement('div');
+                            chip.className = 'absolute inset-0 bg-gradient-to-br from-red-500/70 to-orange-500/70 rounded-lg backdrop-blur-sm';
+                            cellEl.insertBefore(chip, numberSpan);
+                        }
+
+                        // Click handler
+                        cellEl.addEventListener('click', () => toggleNumber(number));
+                    }
+
+                    rowEl.appendChild(cellEl);
+                }
+
+                bingoCardEl.appendChild(rowEl);
+            }
+        }
+
+        // Classic style (inspired by traditional bingo cards)
+        function renderClassicCard() {
+            // Create classic bingo card container
+            const cardWrapper = document.createElement('div');
+            cardWrapper.className = 'bg-white rounded-xl p-4 shadow-2xl';
+
+            // Add "BINGO" header
+            const header = document.createElement('div');
+            header.className = 'text-center mb-3';
+            header.innerHTML = '<h2 class="text-3xl font-black text-gray-800 tracking-widest">BINGO</h2>';
+            cardWrapper.appendChild(header);
+
+            // Create table
+            const table = document.createElement('table');
+            table.className = 'w-full border-collapse';
+
+            for (let row = 0; row < 3; row++) {
+                const rowEl = document.createElement('tr');
+
+                for (let col = 0; col < 9; col++) {
+                    const cellEl = document.createElement('td');
+                    const number = myCard.matrix[row][col];
+
+                    if (number === null) {
+                        // Empty space
+                        cellEl.className = 'border-2 border-gray-400 bg-gray-200 aspect-square p-2';
+                        cellEl.style.width = '11.11%';
+                    } else {
+                        // Number cell
+                        const isMarked = markedNumbers.has(number);
+                        cellEl.className = `border-2 border-gray-800 bg-white text-center cursor-pointer transition-all active:scale-95 relative ${isMarked ? 'bg-red-100' : 'hover:bg-yellow-50'}`;
+                        cellEl.style.width = '11.11%';
+
+                        // Number text
+                        const numberSpan = document.createElement('span');
+                        numberSpan.textContent = number;
+                        numberSpan.className = `block text-2xl font-bold relative z-10 py-3 ${isMarked ? 'text-white' : 'text-gray-900'}`;
+                        cellEl.appendChild(numberSpan);
+
+                        // Classic chip overlay (if marked)
+                        if (isMarked) {
+                            const chip = document.createElement('div');
+                            chip.className = 'absolute inset-0 flex items-center justify-center';
+                            chip.innerHTML = '<div class="w-10 h-10 rounded-full bg-red-600 border-4 border-red-800 shadow-lg"></div>';
+                            cellEl.insertBefore(chip, numberSpan);
+                        }
+
+                        // Click handler
+                        cellEl.addEventListener('click', () => toggleNumber(number));
+                    }
+
+                    rowEl.appendChild(cellEl);
+                }
+
+                table.appendChild(rowEl);
+            }
+
+            cardWrapper.appendChild(table);
+            bingoCardEl.appendChild(cardWrapper);
+        }
+
+        // Toggle number marking
+        function toggleNumber(number) {
+            if (markedNumbers.has(number)) {
+                markedNumbers.delete(number);
+            } else {
+                markedNumbers.add(number);
+            }
+
+            saveMarkedNumbers();
+            renderCard();
+        }
+
+        // Save marked numbers to sessionStorage
+        function saveMarkedNumbers() {
+            if (!myCard) return;
+            const key = `marked_${myCard.serialNumber}`;
+            sessionStorage.setItem(key, JSON.stringify([...markedNumbers]));
+        }
+
+        // Load marked numbers from sessionStorage
+        function loadMarkedNumbers() {
+            if (!myCard) return;
+            const key = `marked_${myCard.serialNumber}`;
+            const saved = sessionStorage.getItem(key);
+
+            if (saved) {
+                try {
+                    const numbers = JSON.parse(saved);
+                    markedNumbers = new Set(numbers);
+                } catch (e) {
+                    markedNumbers = new Set();
+                }
+            } else {
+                markedNumbers = new Set();
+            }
+        }
+
+        // Initialize
+        bingoCardContainer.classList.add('hidden');
+    </script>
+</body>
+
+</html>
