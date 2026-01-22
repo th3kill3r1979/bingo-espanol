@@ -3,22 +3,108 @@
 
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Mi Cartón - Bingo Español</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="/socket.io/socket.io.js"></script>
     <link rel="stylesheet" href="/styles.css">
+    <style>
+        /* Force landscape orientation hint */
+        @media screen and (max-width: 768px) and (orientation: portrait) {
+            body::before {
+                content: "📱 Gira tu dispositivo para mejor experiencia";
+                position: fixed;
+                top: 0;
+                left: 0;
+                right: 0;
+                background: linear-gradient(135deg, #F59E0B, #EC4899);
+                color: white;
+                text-align: center;
+                padding: 8px;
+                font-size: 14px;
+                font-weight: bold;
+                z-index: 9999;
+                animation: pulse 2s infinite;
+            }
+
+            @keyframes pulse {
+
+                0%,
+                100% {
+                    opacity: 1;
+                }
+
+                50% {
+                    opacity: 0.7;
+                }
+            }
+        }
+
+        /* Optimize card for landscape */
+        @media screen and (orientation: landscape) {
+            .card-container {
+                max-width: 95vw;
+                margin: 0 auto;
+            }
+
+            .card-grid {
+                max-height: 70vh;
+            }
+        }
+
+        /* Mobile landscape optimization */
+        @media screen and (max-width: 896px) and (orientation: landscape) {
+            body {
+                padding-top: 0 !important;
+            }
+
+            .header-compact {
+                padding: 0.5rem 0 !important;
+                margin-bottom: 0.5rem !important;
+            }
+
+            .header-compact h1 {
+                font-size: 1.5rem !important;
+                margin-bottom: 0.25rem !important;
+            }
+
+            .header-compact p {
+                font-size: 0.75rem !important;
+            }
+
+            .card-container {
+                padding: 0.75rem !important;
+                margin-bottom: 0.5rem !important;
+            }
+
+            .instructions-compact {
+                padding: 0.5rem !important;
+                font-size: 0.75rem !important;
+            }
+
+            .style-selector {
+                margin-bottom: 0.5rem !important;
+            }
+        }
+
+        /* Tablet landscape */
+        @media screen and (min-width: 768px) and (max-width: 1024px) and (orientation: landscape) {
+            .card-container {
+                max-width: 90vw;
+            }
+        }
+    </style>
 </head>
 
 <body class="bg-gradient-to-br from-blue-900 via-indigo-900 to-purple-900 min-h-screen text-white">
-    <div class="container mx-auto px-4 py-6 max-w-2xl">
+    <div class="container mx-auto px-4 py-2 sm:py-6 max-w-6xl">
         <!-- Header -->
-        <header class="text-center mb-4">
+        <header class="text-center mb-2 sm:mb-4 header-compact">
             <h1
-                class="text-4xl font-bold mb-2 bg-gradient-to-r from-yellow-300 to-orange-400 bg-clip-text text-transparent">
+                class="text-2xl sm:text-4xl font-bold mb-1 sm:mb-2 bg-gradient-to-r from-yellow-300 to-orange-400 bg-clip-text text-transparent">
                 🎰 Mi Cartón de Bingo
             </h1>
-            <p class="text-sm text-gray-300">Toca los números para marcarlos</p>
+            <p class="text-xs sm:text-sm text-gray-300">Toca los números para marcarlos</p>
         </header>
 
         <!-- Game Status -->
@@ -39,36 +125,36 @@
         </div>
 
         <!-- Style Selector -->
-        <div class="mb-4 flex justify-center gap-2">
+        <div class="mb-2 sm:mb-4 flex justify-center gap-2 style-selector">
             <button id="styleModern"
-                class="style-btn px-4 py-2 rounded-lg font-semibold transition-all bg-purple-600 text-white">
+                class="style-btn px-3 sm:px-4 py-1.5 sm:py-2 text-sm sm:text-base rounded-lg font-semibold transition-all bg-purple-600 text-white">
                 🎨 Moderno
             </button>
             <button id="styleClassic"
-                class="style-btn px-4 py-2 rounded-lg font-semibold transition-all bg-white/20 text-gray-300 hover:bg-white/30">
+                class="style-btn px-3 sm:px-4 py-1.5 sm:py-2 text-sm sm:text-base rounded-lg font-semibold transition-all bg-white/20 text-gray-300 hover:bg-white/30">
                 📋 Clásico
             </button>
         </div>
 
         <!-- Bingo Card -->
         <div id="bingoCardContainer"
-            class="bg-white/10 backdrop-blur-lg rounded-2xl p-6 border border-white/20 shadow-2xl mb-6">
+            class="card-container bg-white/10 backdrop-blur-lg rounded-2xl p-3 sm:p-6 border border-white/20 shadow-2xl mb-2 sm:mb-6">
             <!-- Serial Number -->
-            <div class="mb-4 text-center">
+            <div class="mb-2 sm:mb-4 text-center">
                 <p class="text-xs text-gray-400">Número de Serie:</p>
-                <p id="serialNumber" class="font-mono text-2xl font-bold text-yellow-400">-</p>
+                <p id="serialNumber" class="font-mono text-xl sm:text-2xl font-bold text-yellow-400">-</p>
             </div>
 
             <!-- Card Grid (3x9) -->
-            <div id="bingoCard" class="space-y-2">
+            <div id="bingoCard" class="card-grid space-y-1 sm:space-y-2">
                 <!-- Card will be rendered here -->
             </div>
         </div>
 
         <!-- Instructions -->
-        <div class="bg-white/10 backdrop-blur-lg rounded-xl p-4 border border-white/20">
-            <h3 class="font-bold mb-2 text-center">📋 Instrucciones</h3>
-            <ul class="text-sm text-gray-300 space-y-1">
+        <div class="instructions-compact bg-white/10 backdrop-blur-lg rounded-xl p-3 sm:p-4 border border-white/20">
+            <h3 class="font-bold mb-1 sm:mb-2 text-center text-sm sm:text-base">📋 Instrucciones</h3>
+            <ul class="text-xs sm:text-sm text-gray-300 space-y-0.5 sm:space-y-1">
                 <li>✓ Toca un número para colocar una ficha</li>
                 <li>✓ Toca una ficha para quitarla</li>
                 <li>✓ Los números marcados se guardan automáticamente</li>
@@ -174,7 +260,7 @@
         function renderModernCard() {
             for (let row = 0; row < 3; row++) {
                 const rowEl = document.createElement('div');
-                rowEl.className = 'grid grid-cols-9 gap-2';
+                rowEl.className = 'grid grid-cols-9 gap-1 sm:gap-2';
 
                 for (let col = 0; col < 9; col++) {
                     const cellEl = document.createElement('div');
@@ -186,7 +272,7 @@
                     } else {
                         // Number cell
                         const isMarked = markedNumbers.has(number);
-                        cellEl.className = `aspect-square rounded-lg flex items-center justify-center font-bold text-xl cursor-pointer transition-all duration-200 active:scale-95 relative ${isMarked
+                        cellEl.className = `aspect-square rounded-lg flex items-center justify-center font-bold text-base sm:text-xl cursor-pointer transition-all duration-200 active:scale-95 relative ${isMarked
                             ? 'bg-white/90 text-gray-900 shadow-lg'
                             : 'bg-white/20 text-white border-2 border-white/40 hover:bg-white/30'
                             }`;
@@ -219,12 +305,12 @@
         function renderClassicCard() {
             // Create classic bingo card container
             const cardWrapper = document.createElement('div');
-            cardWrapper.className = 'bg-white rounded-xl p-4 shadow-2xl';
+            cardWrapper.className = 'bg-white rounded-xl p-2 sm:p-4 shadow-2xl';
 
             // Add "BINGO" header
             const header = document.createElement('div');
-            header.className = 'text-center mb-3';
-            header.innerHTML = '<h2 class="text-3xl font-black text-gray-800 tracking-widest">BINGO</h2>';
+            header.className = 'text-center mb-2 sm:mb-3';
+            header.innerHTML = '<h2 class="text-2xl sm:text-3xl font-black text-gray-800 tracking-widest">BINGO</h2>';
             cardWrapper.appendChild(header);
 
             // Create table
@@ -240,7 +326,7 @@
 
                     if (number === null) {
                         // Empty space
-                        cellEl.className = 'border-2 border-gray-400 bg-gray-200 aspect-square p-2';
+                        cellEl.className = 'border-2 border-gray-400 bg-gray-200 aspect-square p-1 sm:p-2';
                         cellEl.style.width = '11.11%';
                     } else {
                         // Number cell
@@ -251,14 +337,14 @@
                         // Number text
                         const numberSpan = document.createElement('span');
                         numberSpan.textContent = number;
-                        numberSpan.className = `block text-2xl font-bold relative z-10 py-3 ${isMarked ? 'text-white' : 'text-gray-900'}`;
+                        numberSpan.className = `block text-lg sm:text-2xl font-bold relative z-10 py-2 sm:py-3 ${isMarked ? 'text-white' : 'text-gray-900'}`;
                         cellEl.appendChild(numberSpan);
 
                         // Classic chip overlay (if marked)
                         if (isMarked) {
                             const chip = document.createElement('div');
                             chip.className = 'absolute inset-0 flex items-center justify-center';
-                            chip.innerHTML = '<div class="w-10 h-10 rounded-full bg-red-600 border-4 border-red-800 shadow-lg"></div>';
+                            chip.innerHTML = '<div class="w-8 h-8 sm:w-10 sm:h-10 rounded-full bg-red-600 border-4 border-red-800 shadow-lg"></div>';
                             cellEl.insertBefore(chip, numberSpan);
                         }
 
