@@ -4,135 +4,89 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Bingo Español - Inicio</title>
+    <title>Bingo Time | Sistema de Bingo en Tiempo Real</title>
+    <meta name="description"
+        content="Sistema profesional de Bingo Español con sincronización en tiempo real. Moderador, pantalla pública y cartones digitales.">
+
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Montserrat:wght@700;800;900&family=Inter:wght@400;500;600&display=swap"
+        rel="stylesheet">
+
+    <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
-    <link rel="stylesheet" href="/styles.css">
-</head>
 
-<body
-    class="bg-gradient-to-br from-slate-900 via-purple-900 to-indigo-900 min-h-screen text-white flex items-center justify-center">
-    <div class="container mx-auto px-4 py-12 max-w-6xl">
-        <!-- Logo y Título -->
-        <header class="text-center mb-16 animate-fade-in">
-            <div class="mb-8">
-                <div
-                    class="inline-block bg-gradient-to-br from-yellow-400 to-orange-500 rounded-full p-8 shadow-2xl transform hover:scale-105 transition-transform duration-300">
-                    <span class="text-9xl">🎰</span>
-                </div>
-            </div>
-            <h1
-                class="text-7xl font-black mb-4 bg-gradient-to-r from-yellow-300 via-orange-400 to-red-500 bg-clip-text text-transparent drop-shadow-lg">
-                BINGO ESPAÑOL
-            </h1>
-            <p class="text-2xl text-gray-300 font-semibold">Sistema de Bingo en Tiempo Real</p>
-            <p class="text-lg text-gray-400 mt-2">90 Bolas • Sincronización Instantánea</p>
-        </header>
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
 
-        <!-- Tarjetas de Acceso -->
-        <div class="grid grid-cols-1 md:grid-cols-3 gap-8 mb-12">
-            <!-- Moderador -->
-            <a href="/moderator" class="group">
-                <div
-                    class="bg-white/10 backdrop-blur-lg rounded-3xl p-8 border border-white/20 shadow-2xl hover:shadow-yellow-500/20 transform hover:scale-105 transition-all duration-300 hover:bg-white/15">
-                    <div class="text-center">
-                        <div class="text-6xl mb-4 group-hover:scale-110 transition-transform">🖥️</div>
-                        <h2 class="text-3xl font-bold mb-3 text-yellow-400">Moderador</h2>
-                        <p class="text-gray-300 mb-6">Panel de control para gestionar el juego</p>
-                        <ul class="text-sm text-gray-400 space-y-2 text-left">
-                            <li>✓ Sacar bolas</li>
-                            <li>✓ Validar cartones</li>
-                            <li>✓ Generar QR</li>
-                            <li>✓ Reiniciar juego</li>
-                        </ul>
-                    </div>
-                    <div class="mt-6 text-center">
-                        <span
-                            class="inline-block bg-yellow-500 text-gray-900 font-bold py-2 px-6 rounded-full group-hover:bg-yellow-400 transition-colors">
-                            Acceder →
-                        </span>
-                    </div>
-                </div>
-            </a>
-
-            <!-- Display Público -->
-            <a href="/display" class="group">
-                <div
-                    class="bg-white/10 backdrop-blur-lg rounded-3xl p-8 border border-white/20 shadow-2xl hover:shadow-green-500/20 transform hover:scale-105 transition-all duration-300 hover:bg-white/15">
-                    <div class="text-center">
-                        <div class="text-6xl mb-4 group-hover:scale-110 transition-transform">📺</div>
-                        <h2 class="text-3xl font-bold mb-3 text-green-400">Pantalla Pública</h2>
-                        <p class="text-gray-300 mb-6">Display para TV o proyector</p>
-                        <ul class="text-sm text-gray-400 space-y-2 text-left">
-                            <li>✓ Último número</li>
-                            <li>✓ Tablero 1-90</li>
-                            <li>✓ Animaciones</li>
-                            <li>✓ Pantalla completa</li>
-                        </ul>
-                    </div>
-                    <div class="mt-6 text-center">
-                        <span
-                            class="inline-block bg-green-500 text-gray-900 font-bold py-2 px-6 rounded-full group-hover:bg-green-400 transition-colors">
-                            Acceder →
-                        </span>
-                    </div>
-                </div>
-            </a>
-
-            <!-- Jugador -->
-            <a href="/player" class="group">
-                <div
-                    class="bg-white/10 backdrop-blur-lg rounded-3xl p-8 border border-white/20 shadow-2xl hover:shadow-blue-500/20 transform hover:scale-105 transition-all duration-300 hover:bg-white/15">
-                    <div class="text-center">
-                        <div class="text-6xl mb-4 group-hover:scale-110 transition-transform">📱</div>
-                        <h2 class="text-3xl font-bold mb-3 text-blue-400">Cartón de Jugador</h2>
-                        <p class="text-gray-300 mb-6">Obtén tu cartón único</p>
-                        <ul class="text-sm text-gray-400 space-y-2 text-left">
-                            <li>✓ Cartón único</li>
-                            <li>✓ Marcar números</li>
-                            <li>✓ Estilos personalizables</li>
-                            <li>✓ Número de serie</li>
-                        </ul>
-                    </div>
-                    <div class="mt-6 text-center">
-                        <span
-                            class="inline-block bg-blue-500 text-gray-900 font-bold py-2 px-6 rounded-full group-hover:bg-blue-400 transition-colors">
-                            Acceder →
-                        </span>
-                    </div>
-                </div>
-            </a>
-        </div>
-
-        <!-- Información Adicional -->
-        <div class="bg-white/5 backdrop-blur-lg rounded-2xl p-6 border border-white/10 text-center">
-            <h3 class="text-xl font-bold mb-3 text-gray-200">¿Cómo Jugar?</h3>
-            <div class="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm text-gray-300">
-                <div>
-                    <span class="text-2xl mb-2 block">1️⃣</span>
-                    <p><strong>Moderador</strong> abre el panel de control</p>
-                </div>
-                <div>
-                    <span class="text-2xl mb-2 block">2️⃣</span>
-                    <p><strong>Jugadores</strong> escanean el QR para obtener cartones</p>
-                </div>
-                <div>
-                    <span class="text-2xl mb-2 block">3️⃣</span>
-                    <p><strong>Display</strong> se proyecta en pantalla grande</p>
-                </div>
-            </div>
-        </div>
-
-        <!-- Footer -->
-        <footer class="text-center mt-12 text-gray-500 text-sm">
-            <p>Bingo Español • Sistema en Tiempo Real con WebSockets</p>
-        </footer>
-    </div>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        'display': ['Montserrat', 'sans-serif'],
+                        'body': ['Inter', 'sans-serif'],
+                    },
+                    colors: {
+                        'primary': '#8B5CF6',
+                        'accent': '#F59E0B',
+                        'secondary': '#EC4899',
+                    }
+                }
+            }
+        }
+    </script>
 
     <style>
-        @keyframes fade-in {
+        * {
+            scroll-behavior: smooth;
+        }
+
+        .hero-gradient {
+            background: linear-gradient(135deg, rgba(139, 92, 246, 0.95) 0%, rgba(236, 72, 153, 0.95) 50%, rgba(245, 158, 11, 0.95) 100%);
+        }
+
+        .text-gradient {
+            background: linear-gradient(135deg, #F59E0B 0%, #EC4899 50%, #8B5CF6 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .card-hover {
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .card-hover:hover {
+            transform: translateY(-12px) scale(1.02);
+        }
+
+        .scroll-indicator {
+            animation: bounce 2s infinite;
+        }
+
+        @keyframes bounce {
+
+            0%,
+            100% {
+                transform: translateY(0);
+            }
+
+            50% {
+                transform: translateY(10px);
+            }
+        }
+
+        .fade-in {
+            animation: fadeIn 1s ease-out;
+        }
+
+        @keyframes fadeIn {
             from {
                 opacity: 0;
-                transform: translateY(-20px);
+                transform: translateY(30px);
             }
 
             to {
@@ -141,23 +95,376 @@
             }
         }
 
-        .animate-fade-in {
-            animation: fade-in 0.8s ease-out;
+        .stagger-1 {
+            animation-delay: 0.1s;
         }
 
-        /* Animación de entrada escalonada para las tarjetas */
-        .grid>a:nth-child(1)>div {
-            animation: fade-in 0.6s ease-out 0.2s both;
+        .stagger-2 {
+            animation-delay: 0.2s;
         }
 
-        .grid>a:nth-child(2)>div {
-            animation: fade-in 0.6s ease-out 0.4s both;
+        .stagger-3 {
+            animation-delay: 0.3s;
         }
 
-        .grid>a:nth-child(3)>div {
-            animation: fade-in 0.6s ease-out 0.6s both;
+        .border-gradient {
+            border-image: linear-gradient(135deg, #F59E0B, #EC4899, #8B5CF6) 1;
+        }
+
+        .hover-glow:hover {
+            box-shadow: 0 0 30px rgba(245, 158, 11, 0.5);
         }
     </style>
+</head>
+
+<body class="bg-gray-900 text-white font-body">
+
+    <!-- HERO SECTION -->
+    <section class="relative min-h-screen flex items-center justify-center overflow-hidden">
+        <!-- Background Image with Overlay -->
+        <div class="absolute inset-0 z-0">
+            <img src="/bingo_hero_background_1769047910138.png" alt="Bingo Time" class="w-full h-full object-cover">
+            <div class="absolute inset-0 hero-gradient"></div>
+        </div>
+
+        <!-- Content -->
+        <div class="relative z-10 container mx-auto px-6 text-center">
+            <div class="fade-in">
+                <p class="text-accent font-display text-sm md:text-base tracking-[0.3em] uppercase mb-6">
+                    Sistema en Tiempo Real
+                </p>
+
+                <h1 class="font-display font-black text-6xl md:text-8xl lg:text-9xl mb-8 leading-none">
+                    BINGO <span class="text-accent">TIME</span>
+                </h1>
+
+                <p class="text-xl md:text-2xl text-gray-200 mb-4 max-w-3xl mx-auto">
+                    Bingo Español • 90 Bolas • Sincronización Instantánea
+                </p>
+
+                <p class="text-base md:text-lg text-gray-300 mb-12 max-w-2xl mx-auto">
+                    La plataforma profesional para organizar juegos de bingo con tecnología WebSocket
+                </p>
+
+                <!-- CTAs -->
+                <div class="flex flex-col sm:flex-row gap-6 justify-center items-center mb-16">
+                    <a href="#features"
+                        class="group px-10 py-5 border-2 border-white text-white font-display font-bold text-lg rounded-full hover:bg-white hover:text-gray-900 transition-all duration-300 hover:scale-105">
+                        Explorar Sistema
+                        <i
+                            class="fas fa-arrow-down ml-2 group-hover:translate-y-1 inline-block transition-transform"></i>
+                    </a>
+                    <a href="/moderator"
+                        class="px-10 py-5 bg-gradient-to-r from-accent via-secondary to-primary text-white font-display font-bold text-lg rounded-full hover:scale-105 transition-all duration-300 hover-glow shadow-2xl">
+                        Iniciar Juego
+                        <i class="fas fa-play ml-2"></i>
+                    </a>
+                </div>
+
+                <!-- Stats -->
+                <div class="flex flex-wrap justify-center gap-8 text-center">
+                    <div class="px-6">
+                        <div class="text-4xl font-display font-black text-accent mb-2">90</div>
+                        <div class="text-sm text-gray-300 uppercase tracking-wider">Bolas</div>
+                    </div>
+                    <div class="w-px bg-gradient-to-b from-transparent via-accent to-transparent"></div>
+                    <div class="px-6">
+                        <div class="text-4xl font-display font-black text-secondary mb-2">∞</div>
+                        <div class="text-sm text-gray-300 uppercase tracking-wider">Jugadores</div>
+                    </div>
+                    <div class="w-px bg-gradient-to-b from-transparent via-secondary to-transparent"></div>
+                    <div class="px-6">
+                        <div class="text-4xl font-display font-black text-primary mb-2">3</div>
+                        <div class="text-sm text-gray-300 uppercase tracking-wider">Interfaces</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Scroll Indicator -->
+        <div class="absolute bottom-10 left-1/2 transform -translate-x-1/2 z-10 scroll-indicator">
+            <i class="fas fa-chevron-down text-3xl text-accent"></i>
+        </div>
+    </section>
+
+    <!-- FEATURES SECTION -->
+    <section id="features" class="py-24 bg-gray-900">
+        <div class="container mx-auto px-6">
+            <!-- Section Header -->
+            <div class="text-center mb-20">
+                <div class="w-32 h-1 bg-gradient-to-r from-accent via-secondary to-primary mx-auto mb-8"></div>
+                <h2 class="font-display font-black text-5xl md:text-7xl mb-6">
+                    Tres <span class="text-gradient">Interfaces</span>
+                </h2>
+                <p class="text-xl text-gray-400 max-w-2xl mx-auto">
+                    Un sistema completo diseñado para cada rol en tu evento de bingo
+                </p>
+            </div>
+
+            <!-- Feature Cards -->
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-10 mb-16">
+                <!-- Moderador -->
+                <div
+                    class="card-hover hover-glow bg-gradient-to-br from-gray-800 to-gray-900 rounded-3xl overflow-hidden border-l-4 border-accent shadow-2xl stagger-1 fade-in">
+                    <div class="aspect-square overflow-hidden">
+                        <img src="/bingo_moderator_feature_1769047928407.png" alt="Panel Moderador"
+                            class="w-full h-full object-cover hover:scale-110 transition-transform duration-500">
+                    </div>
+                    <div class="p-8">
+                        <div
+                            class="inline-block bg-accent/20 text-accent px-4 py-1 rounded-full text-sm font-semibold mb-4">
+                            <i class="fas fa-crown mr-2"></i>Control Total
+                        </div>
+                        <h3 class="font-display font-bold text-3xl mb-4 text-accent">Panel Moderador</h3>
+                        <p class="text-gray-400 mb-6 leading-relaxed">
+                            Controla el juego completo desde una interfaz intuitiva. Saca bolas, valida cartones
+                            ganadores y gestiona el evento.
+                        </p>
+                        <ul class="space-y-3 mb-8">
+                            <li class="flex items-center text-gray-300">
+                                <i class="fas fa-check-circle text-accent mr-3"></i>
+                                Sacar bolas aleatorias
+                            </li>
+                            <li class="flex items-center text-gray-300">
+                                <i class="fas fa-check-circle text-accent mr-3"></i>
+                                Validador de cartones
+                            </li>
+                            <li class="flex items-center text-gray-300">
+                                <i class="fas fa-check-circle text-accent mr-3"></i>
+                                Generador de QR
+                            </li>
+                            <li class="flex items-center text-gray-300">
+                                <i class="fas fa-check-circle text-accent mr-3"></i>
+                                Historial completo
+                            </li>
+                        </ul>
+                        <a href="/moderator"
+                            class="block w-full text-center py-4 bg-accent hover:bg-accent/90 text-gray-900 font-display font-bold rounded-xl transition-all duration-300 hover:scale-105">
+                            Acceder al Panel
+                            <i class="fas fa-arrow-right ml-2"></i>
+                        </a>
+                    </div>
+                </div>
+
+                <!-- Display -->
+                <div
+                    class="card-hover hover-glow bg-gradient-to-br from-gray-800 to-gray-900 rounded-3xl overflow-hidden border-l-4 border-secondary shadow-2xl stagger-2 fade-in">
+                    <div class="aspect-square overflow-hidden">
+                        <img src="/bingo_display_feature_1769047943279.png" alt="Pantalla Pública"
+                            class="w-full h-full object-cover hover:scale-110 transition-transform duration-500">
+                    </div>
+                    <div class="p-8">
+                        <div
+                            class="inline-block bg-secondary/20 text-secondary px-4 py-1 rounded-full text-sm font-semibold mb-4">
+                            <i class="fas fa-tv mr-2"></i>Gran Pantalla
+                        </div>
+                        <h3 class="font-display font-bold text-3xl mb-4 text-secondary">Display Público</h3>
+                        <p class="text-gray-400 mb-6 leading-relaxed">
+                            Proyecta en TV o pantalla grande. Todos los jugadores ven los números en tiempo real con
+                            animaciones espectaculares.
+                        </p>
+                        <ul class="space-y-3 mb-8">
+                            <li class="flex items-center text-gray-300">
+                                <i class="fas fa-check-circle text-secondary mr-3"></i>
+                                Último número destacado
+                            </li>
+                            <li class="flex items-center text-gray-300">
+                                <i class="fas fa-check-circle text-secondary mr-3"></i>
+                                Tablero 1-90 completo
+                            </li>
+                            <li class="flex items-center text-gray-300">
+                                <i class="fas fa-check-circle text-secondary mr-3"></i>
+                                Animaciones en vivo
+                            </li>
+                            <li class="flex items-center text-gray-300">
+                                <i class="fas fa-check-circle text-secondary mr-3"></i>
+                                Modo pantalla completa
+                            </li>
+                        </ul>
+                        <a href="/display"
+                            class="block w-full text-center py-4 bg-secondary hover:bg-secondary/90 text-white font-display font-bold rounded-xl transition-all duration-300 hover:scale-105">
+                            Abrir Display
+                            <i class="fas fa-arrow-right ml-2"></i>
+                        </a>
+                    </div>
+                </div>
+
+                <!-- Player -->
+                <div
+                    class="card-hover hover-glow bg-gradient-to-br from-gray-800 to-gray-900 rounded-3xl overflow-hidden border-l-4 border-primary shadow-2xl stagger-3 fade-in">
+                    <div class="aspect-square overflow-hidden">
+                        <img src="/bingo_player_feature_1769047957118.png" alt="Cartón Jugador"
+                            class="w-full h-full object-cover hover:scale-110 transition-transform duration-500">
+                    </div>
+                    <div class="p-8">
+                        <div
+                            class="inline-block bg-primary/20 text-primary px-4 py-1 rounded-full text-sm font-semibold mb-4">
+                            <i class="fas fa-mobile-alt mr-2"></i>Móvil
+                        </div>
+                        <h3 class="font-display font-bold text-3xl mb-4 text-primary">Cartón Digital</h3>
+                        <p class="text-gray-400 mb-6 leading-relaxed">
+                            Cada jugador obtiene su cartón único en el móvil. Marca números con un toque y personaliza
+                            el estilo.
+                        </p>
+                        <ul class="space-y-3 mb-8">
+                            <li class="flex items-center text-gray-300">
+                                <i class="fas fa-check-circle text-primary mr-3"></i>
+                                Cartón único generado
+                            </li>
+                            <li class="flex items-center text-gray-300">
+                                <i class="fas fa-check-circle text-primary mr-3"></i>
+                                Marcar con un toque
+                            </li>
+                            <li class="flex items-center text-gray-300">
+                                <i class="fas fa-check-circle text-primary mr-3"></i>
+                                Estilos personalizables
+                            </li>
+                            <li class="flex items-center text-gray-300">
+                                <i class="fas fa-check-circle text-primary mr-3"></i>
+                                Número de serie
+                            </li>
+                        </ul>
+                        <a href="/player"
+                            class="block w-full text-center py-4 bg-primary hover:bg-primary/90 text-white font-display font-bold rounded-xl transition-all duration-300 hover:scale-105">
+                            Obtener Cartón
+                            <i class="fas fa-arrow-right ml-2"></i>
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- HOW IT WORKS -->
+    <section class="py-24 bg-gradient-to-b from-gray-900 to-gray-800">
+        <div class="container mx-auto px-6">
+            <div class="text-center mb-16">
+                <h2 class="font-display font-black text-5xl md:text-6xl mb-6">
+                    ¿Cómo <span class="text-gradient">Funciona?</span>
+                </h2>
+                <p class="text-xl text-gray-400">Tres simples pasos para comenzar</p>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-8 max-w-5xl mx-auto">
+                <div class="text-center">
+                    <div
+                        class="w-20 h-20 bg-gradient-to-br from-accent to-accent/50 rounded-full flex items-center justify-center text-4xl font-display font-black mx-auto mb-6">
+                        1
+                    </div>
+                    <h3 class="font-display font-bold text-2xl mb-4">Moderador Inicia</h3>
+                    <p class="text-gray-400">Abre el panel de moderador y genera el código QR para que los jugadores se
+                        unan</p>
+                </div>
+
+                <div class="text-center">
+                    <div
+                        class="w-20 h-20 bg-gradient-to-br from-secondary to-secondary/50 rounded-full flex items-center justify-center text-4xl font-display font-black mx-auto mb-6">
+                        2
+                    </div>
+                    <h3 class="font-display font-bold text-2xl mb-4">Jugadores Escanean</h3>
+                    <p class="text-gray-400">Cada jugador escanea el QR y recibe su cartón único de bingo español</p>
+                </div>
+
+                <div class="text-center">
+                    <div
+                        class="w-20 h-20 bg-gradient-to-br from-primary to-primary/50 rounded-full flex items-center justify-center text-4xl font-display font-black mx-auto mb-6">
+                        3
+                    </div>
+                    <h3 class="font-display font-bold text-2xl mb-4">¡A Jugar!</h3>
+                    <p class="text-gray-400">El moderador saca bolas y todos ven los números en tiempo real. ¡Línea y
+                        Bingo!</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- SOCIAL PROOF -->
+    <section class="py-24 bg-gray-800">
+        <div class="container mx-auto px-6">
+            <div class="text-center mb-16">
+                <h2 class="font-display font-black text-5xl md:text-6xl mb-6">
+                    Experiencia <span class="text-gradient">Premium</span>
+                </h2>
+            </div>
+
+            <div class="grid grid-cols-2 md:grid-cols-3 gap-6 max-w-5xl mx-auto">
+                <div class="aspect-square rounded-2xl overflow-hidden group cursor-pointer">
+                    <img src="/bingo_social_1_1769047971127.png" alt="Bingo Experience"
+                        class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500">
+                </div>
+                <div class="aspect-square rounded-2xl overflow-hidden group cursor-pointer">
+                    <img src="/bingo_social_2_1769047985400.png" alt="Bingo Experience"
+                        class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500">
+                </div>
+                <div
+                    class="aspect-square rounded-2xl overflow-hidden group cursor-pointer bg-gradient-to-br from-accent via-secondary to-primary flex items-center justify-center">
+                    <div class="text-center p-6">
+                        <i class="fas fa-trophy text-6xl mb-4"></i>
+                        <p class="font-display font-bold text-2xl">Tu Próximo Evento</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- CTA FINAL -->
+    <section class="py-32 bg-gradient-to-br from-gray-900 via-purple-900 to-gray-900">
+        <div class="container mx-auto px-6 text-center">
+            <h2 class="font-display font-black text-5xl md:text-7xl mb-8">
+                ¿Listo para <span class="text-gradient">Jugar?</span>
+            </h2>
+            <p class="text-2xl text-gray-300 mb-12 max-w-2xl mx-auto">
+                Comienza tu juego de bingo profesional en segundos
+            </p>
+            <a href="/moderator"
+                class="inline-block px-16 py-6 bg-gradient-to-r from-accent via-secondary to-primary text-white font-display font-bold text-2xl rounded-full hover:scale-105 transition-all duration-300 hover-glow shadow-2xl">
+                Iniciar Ahora
+                <i class="fas fa-rocket ml-3"></i>
+            </a>
+        </div>
+    </section>
+
+    <!-- FOOTER -->
+    <footer class="bg-gray-950 border-t-4 border-gradient py-12">
+        <div class="container mx-auto px-6">
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-8 mb-8">
+                <div>
+                    <h3 class="font-display font-bold text-2xl mb-4">
+                        BINGO <span class="text-accent">TIME</span>
+                    </h3>
+                    <p class="text-gray-400">
+                        Sistema profesional de bingo en tiempo real con tecnología WebSocket
+                    </p>
+                </div>
+
+                <div>
+                    <h4 class="font-display font-bold text-lg mb-4">Accesos Rápidos</h4>
+                    <ul class="space-y-2">
+                        <li><a href="/moderator" class="text-gray-400 hover:text-accent transition-colors">Panel
+                                Moderador</a></li>
+                        <li><a href="/display" class="text-gray-400 hover:text-accent transition-colors">Pantalla
+                                Pública</a></li>
+                        <li><a href="/player" class="text-gray-400 hover:text-accent transition-colors">Cartón de
+                                Jugador</a></li>
+                    </ul>
+                </div>
+
+                <div>
+                    <h4 class="font-display font-bold text-lg mb-4">Tecnología</h4>
+                    <ul class="space-y-2 text-gray-400">
+                        <li><i class="fas fa-check text-accent mr-2"></i>WebSocket Real-time</li>
+                        <li><i class="fas fa-check text-accent mr-2"></i>Responsive Design</li>
+                        <li><i class="fas fa-check text-accent mr-2"></i>Bingo Español 90 Bolas</li>
+                    </ul>
+                </div>
+            </div>
+
+            <div class="border-t border-gray-800 pt-8 text-center text-gray-500">
+                <p>&copy; 2026 Bingo Time • Sistema en Tiempo Real</p>
+            </div>
+        </div>
+    </footer>
+
 </body>
 
 </html>
