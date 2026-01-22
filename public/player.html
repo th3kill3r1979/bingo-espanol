@@ -139,10 +139,18 @@
         <!-- Bingo Card -->
         <div id="bingoCardContainer"
             class="card-container bg-white/10 backdrop-blur-lg rounded-2xl p-3 sm:p-6 border border-white/20 shadow-2xl mb-2 sm:mb-6">
-            <!-- Serial Number -->
+            <!-- Serial Number & Name -->
             <div class="mb-2 sm:mb-4 text-center">
-                <p class="text-xs text-gray-400">Número de Serie:</p>
-                <p id="serialNumber" class="font-mono text-xl sm:text-2xl font-bold text-yellow-400">-</p>
+                <div class="flex justify-between items-center px-4">
+                    <div class="text-left">
+                        <p class="text-xs text-gray-400">Jugador:</p>
+                        <p id="playerNameDisplay" class="font-bold text-lg text-white truncate max-w-[150px]">-</p>
+                    </div>
+                    <div class="text-right">
+                        <p class="text-xs text-gray-400">Serie:</p>
+                        <p id="serialNumber" class="font-mono text-xl sm:text-2xl font-bold text-yellow-400">-</p>
+                    </div>
+                </div>
             </div>
 
             <!-- Card Grid (3x9) -->
@@ -168,6 +176,56 @@
             </div>
             <p class="mt-4 text-gray-300">Cargando tu cartón...</p>
         </div>
+
+        <!-- Name Input Modal -->
+        <div id="nameModal"
+            class="fixed inset-0 bg-black/80 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+            <div
+                class="bg-gradient-to-br from-purple-900 to-indigo-900 rounded-3xl p-8 max-w-md w-full border-2 border-purple-500 shadow-2xl transform animate-scale-in">
+                <div class="text-center mb-6">
+                    <div class="text-6xl mb-4">🎰</div>
+                    <h2
+                        class="text-3xl font-bold mb-2 bg-gradient-to-r from-yellow-300 to-orange-400 bg-clip-text text-transparent">
+                        ¡Bienvenido!
+                    </h2>
+                    <p class="text-gray-300">Ingresa tu nombre para comenzar</p>
+                </div>
+
+                <form id="nameForm" class="space-y-4">
+                    <div>
+                        <input type="text" id="playerNameInput" placeholder="Tu nombre" required maxlength="20"
+                            class="w-full px-4 py-3 bg-white/10 border-2 border-white/30 rounded-xl text-white placeholder-gray-400 focus:outline-none focus:border-yellow-400 transition-all text-center text-lg font-semibold"
+                            autocomplete="off">
+                    </div>
+                    <button type="submit"
+                        class="w-full py-4 bg-gradient-to-r from-yellow-400 to-orange-500 hover:from-yellow-500 hover:to-orange-600 text-gray-900 font-bold text-lg rounded-xl transition-all duration-300 transform hover:scale-105 shadow-lg">
+                        Obtener Mi Cartón 🎲
+                    </button>
+                </form>
+
+                <p class="text-xs text-gray-400 text-center mt-4">
+                    Tu nombre aparecerá cuando ganes
+                </p>
+            </div>
+        </div>
+
+        <style>
+            @keyframes scale-in {
+                from {
+                    opacity: 0;
+                    transform: scale(0.8);
+                }
+
+                to {
+                    opacity: 1;
+                    transform: scale(1);
+                }
+            }
+
+            .animate-scale-in {
+                animation: scale-in 0.3s ease-out;
+            }
+        </style>
     </div>
 
     <script>
@@ -186,6 +244,46 @@
         const invalidMessage = document.getElementById('invalidMessage');
         const styleModernBtn = document.getElementById('styleModern');
         const styleClassicBtn = document.getElementById('styleClassic');
+        const nameModal = document.getElementById('nameModal');
+        const nameForm = document.getElementById('nameForm');
+        const playerNameInput = document.getElementById('playerNameInput');
+
+        // Player Name Logic
+        let playerName = sessionStorage.getItem('bingoPlayerName');
+
+        // Initial setup
+        loadingState.classList.add('hidden'); // Hide loading initially
+
+        if (playerName) {
+            // Already has name, connect immediately
+            nameModal.classList.add('hidden');
+            loadingState.classList.remove('hidden');
+            connectAndRequestCard();
+        } else {
+            // Show name modal
+            nameModal.classList.remove('hidden');
+        }
+
+        // Handle name submission
+        nameForm.addEventListener('submit', (e) => {
+            e.preventDefault();
+            const name = playerNameInput.value.trim();
+            if (name) {
+                playerName = name;
+                sessionStorage.setItem('bingoPlayerName', name);
+                nameModal.classList.add('hidden');
+                loadingState.classList.remove('hidden');
+                connectAndRequestCard();
+            }
+        });
+
+        function connectAndRequestCard() {
+            if (socket.connected) {
+                socket.emit('request-card', { playerName });
+            } else {
+                socket.connect();
+            }
+        }
 
         // Style selector
         styleModernBtn.addEventListener('click', () => {
@@ -212,7 +310,9 @@
 
         // Request a card when connected
         socket.on('connect', () => {
-            socket.emit('request-card');
+            if (playerName) {
+                socket.emit('request-card', { playerName });
+            }
         });
 
         // Receive assigned card
@@ -222,6 +322,12 @@
 
             gameIdEl.textContent = data.gameId;
             serialNumberEl.textContent = data.card.serialNumber;
+
+            // Set player name display
+            const nameDisplay = document.getElementById('playerNameDisplay');
+            if (nameDisplay) {
+                nameDisplay.textContent = data.card.playerName || 'Jugador';
+            }
 
             // Load marked numbers from sessionStorage
             loadMarkedNumbers();

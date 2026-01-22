@@ -48,6 +48,59 @@
         </div>
     </div>
 
+    <!-- Celebration Overlay -->
+    <div id="celebrationOverlay" class="fixed inset-0 pointer-events-none z-50 flex items-center justify-center hidden">
+        <div id="confettiContainer" class="absolute inset-0 overflow-hidden"></div>
+        <div id="celebrationContent"
+            class="text-center transform scale-0 transition-transform duration-500 relative z-10">
+            <h2 id="celebrationTitle"
+                class="text-9xl font-black mb-4 drop-shadow-[0_10px_10px_rgba(0,0,0,0.5)] bg-gradient-to-r from-yellow-300 via-orange-400 to-red-500 bg-clip-text text-transparent animate-bounce-slow">
+                ¡LÍNEA!
+            </h2>
+            <div class="bg-black/50 backdrop-blur-md rounded-2xl px-12 py-6 border-2 border-white/20 inline-block">
+                <p class="text-2xl text-gray-300 mb-2 font-bold uppercase tracking-widest">Ganador</p>
+                <p id="winnerName" class="text-6xl font-bold text-white drop-shadow-lg">Marcos</p>
+            </div>
+        </div>
+    </div>
+
+    <style>
+        .animate-bounce-slow {
+            animation: bounce-slow 2s infinite;
+        }
+
+        @keyframes bounce-slow {
+
+            0%,
+            100% {
+                transform: translateY(-5%);
+            }
+
+            50% {
+                transform: translateY(5%);
+            }
+        }
+
+        .confetti {
+            position: absolute;
+            width: 15px;
+            height: 15px;
+            animation: confetti-fall linear forwards;
+        }
+
+        @keyframes confetti-fall {
+            0% {
+                transform: translateY(-100vh) rotate(0deg);
+                opacity: 1;
+            }
+
+            100% {
+                transform: translateY(100vh) rotate(720deg);
+                opacity: 0;
+            }
+        }
+    </style>
+
     <script>
         const socket = io();
         let drawnBalls = [];
@@ -57,6 +110,108 @@
         const lastBallContainer = document.getElementById('lastBallContainer');
         const waitingMessage = document.getElementById('waitingMessage');
         const numberGridEl = document.getElementById('numberGrid');
+        const celebrationOverlay = document.getElementById('celebrationOverlay');
+        const celebrationContent = document.getElementById('celebrationContent');
+        const celebrationTitle = document.getElementById('celebrationTitle');
+        const winnerNameEl = document.getElementById('winnerName');
+        const confettiContainer = document.getElementById('confettiContainer');
+
+        // Winner Events
+        socket.on('winner-line', (data) => {
+            showCelebration('¡LÍNEA!', data.playerName, 'line');
+        });
+
+        socket.on('winner-bingo', (data) => {
+            showCelebration('¡¡BINGO!!', data.playerName, 'bingo');
+        });
+
+        function showCelebration(title, playerName, type) {
+            // Setup content
+            celebrationTitle.textContent = title;
+            winnerNameEl.textContent = playerName;
+
+            // Show overlay
+            celebrationOverlay.classList.remove('hidden');
+
+            // Animation entrance
+            setTimeout(() => {
+                celebrationContent.classList.remove('scale-0');
+                celebrationContent.classList.add('scale-100');
+            }, 100);
+
+            // Confetti
+            if (type === 'bingo') {
+                createFireworkConfetti();
+            } else {
+                createRainConfetti();
+            }
+
+            // Hide after delay
+            setTimeout(() => {
+                celebrationContent.classList.remove('scale-100');
+                celebrationContent.classList.add('scale-0');
+                setTimeout(() => {
+                    celebrationOverlay.classList.add('hidden');
+                    confettiContainer.innerHTML = '';
+                }, 500);
+            }, type === 'bingo' ? 8000 : 5000);
+        }
+
+        // Animated Confetti Systems
+        function createRainConfetti() {
+            const colors = ['#FCD34D', '#F59E0B', '#F87171', '#60A5FA', '#A78BFA', '#34D399'];
+            for (let i = 0; i < 150; i++) {
+                const confetti = document.createElement('div');
+                confetti.className = 'confetti';
+                confetti.style.left = Math.random() * 100 + 'vw';
+                confetti.style.top = -10 + 'px';
+                confetti.style.backgroundColor = colors[Math.floor(Math.random() * colors.length)];
+                confetti.style.animationDuration = (Math.random() * 3 + 2) + 's';
+                confetti.style.animationDelay = (Math.random() * 2) + 's';
+                confettiContainer.appendChild(confetti);
+            }
+        }
+
+        function createFireworkConfetti() {
+            const colors = ['#FFD700', '#FF4500', '#FF69B4', '#00BFFF', '#7CFC00', '#9400D3']; // Rainbow/Vibrant
+
+            // Burst 1
+            createBurst(colors);
+
+            // Burst 2
+            setTimeout(() => createBurst(colors), 1000);
+
+            // Burst 3
+            setTimeout(() => createBurst(colors), 2500);
+
+            // Constant rain after bursts
+            setTimeout(createRainConfetti, 1500);
+        }
+
+        function createBurst(colors) {
+            for (let i = 0; i < 100; i++) {
+                const confetti = document.createElement('div');
+                confetti.className = 'confetti';
+
+                // Start from center
+                const startX = 50 + (Math.random() * 10 - 5);
+                const startY = 50 + (Math.random() * 10 - 5);
+
+                confetti.style.left = startX + 'vw';
+                confetti.style.top = startY + 'vh';
+                confetti.style.backgroundColor = colors[Math.floor(Math.random() * colors.length)];
+
+                // Explode outwards logic simulated with simple animation overrides could be complex
+                // Simplified: Just spawn random rain from center for now or use rain
+                // Better approach with pure CSS for burst is hard without JS positioning loop
+                // Let's stick to rain for simplicity but intense
+
+                confetti.style.left = Math.random() * 100 + 'vw';
+                confetti.style.top = -50 + 'px'; // Start higher
+                confetti.style.animationDuration = (Math.random() * 2 + 1) + 's'; // Faster
+                confettiContainer.appendChild(confetti);
+            }
+        }
 
         // Initialize number grid (1-90)
         function initializeGrid() {
@@ -90,6 +245,10 @@
             lastBallContainer.classList.add('hidden');
             waitingMessage.classList.remove('hidden');
             updateDisplay();
+
+            // Hide celebration if active
+            celebrationOverlay.classList.add('hidden');
+            confettiContainer.innerHTML = '';
         });
 
         // Update display

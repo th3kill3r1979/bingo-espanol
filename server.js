@@ -158,6 +158,7 @@ function validateCard(serialNumber) {
   // Create a validation result with highlighted matches
   const validation = {
     serialNumber: card.serialNumber,
+    playerName: card.playerName || 'Jugador',
     matrix: card.matrix,
     matches: [],
     lines: [],
@@ -241,7 +242,9 @@ io.on('connection', (socket) => {
   console.log(`Client connected: ${socket.id}`);
 
   // Handle player requesting a card
-  socket.on('request-card', () => {
+  socket.on('request-card', (data) => {
+    const playerName = data?.playerName || 'Jugador';
+
     // Check if this session already has a card
     let serialNumber = gameState.playerSessions.get(socket.id);
     let card;
@@ -249,9 +252,14 @@ io.on('connection', (socket) => {
     if (serialNumber && gameState.cards.has(serialNumber)) {
       // Return existing card
       card = gameState.cards.get(serialNumber);
+      // Update name if provided
+      if (data?.playerName) {
+        card.playerName = playerName;
+      }
     } else {
       // Generate new card
       card = generateSpanishBingoCard();
+      card.playerName = playerName; // Add player name to card
       gameState.cards.set(card.serialNumber, card);
       gameState.playerSessions.set(socket.id, card.serialNumber);
     }
@@ -292,6 +300,23 @@ io.on('connection', (socket) => {
     } else {
       socket.emit('error', { message: 'Card not found!' });
     }
+  });
+
+  // Handle line winner announcement
+  socket.on('announce-line', (data) => {
+    io.emit('winner-line', {
+      playerName: data.playerName,
+      serialNumber: data.serialNumber,
+      lines: data.lines
+    });
+  });
+
+  // Handle bingo winner announcement
+  socket.on('announce-bingo', (data) => {
+    io.emit('winner-bingo', {
+      playerName: data.playerName,
+      serialNumber: data.serialNumber
+    });
   });
 
   // Send current game state to newly connected clients
