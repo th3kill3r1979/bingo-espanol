@@ -213,7 +213,7 @@ function resetGame() {
 
 // Routes
 app.get('/', (req, res) => {
-  res.redirect('/moderator');
+  res.sendFile(path.join(__dirname, 'public', 'index.html'));
 });
 
 app.get('/moderator', (req, res) => {
