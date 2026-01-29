@@ -124,37 +124,46 @@
         <!-- Background Image with Overlay -->
         <div class="absolute inset-0 z-0">
             <img src="/hero_bg.png" alt="Bingo & UNO Time" class="w-full h-full object-cover">
-            <div class="absolute inset-0 bg-black/60 backdrop-blur-[2px]"></div>
+            <div class="absolute inset-0 bg-gray-950/40"></div>
         </div>
 
         <!-- Content -->
         <div class="relative z-10 container mx-auto px-6 text-center">
-            <div class="fade-in">
-                <img src="/logo.png" alt="Logo Bingo & UNO"
-                    class="w-48 md:w-64 mx-auto mb-8 drop-shadow-[0_0_30px_rgba(139,92,246,0.5)]">
+            <div class="fade-in max-w-4xl mx-auto">
+                <!-- Logo with mix-blend-mode to handle solid black background -->
+                <div class="relative inline-block mb-4">
+                    <img src="/logo.png" alt="Logo Bingo & UNO"
+                        class="w-64 md:w-80 mx-auto mix-blend-screen drop-shadow-[0_0_50px_rgba(245,158,11,0.3)]">
+                </div>
 
-                <h1 class="font-display font-black text-6xl md:text-8xl lg:text-9xl mb-8 leading-none tracking-tighter">
-                    BINGO & <span class="text-accent">UNO</span>
+                <h1 class="font-display font-black text-6xl md:text-8xl lg:text-9xl mb-6 leading-none tracking-tighter">
+                    <span class="text-white">BINGO & </span><span class="text-accent italic">UNO</span>
                 </h1>
 
-                <p class="text-xl md:text-2xl text-gray-200 mb-4 max-w-3xl mx-auto font-bold uppercase tracking-widest">
-                    La mejor plataforma de juegos en vivo
+                <p class="text-2xl md:text-3xl text-gray-100 mb-6 font-bold uppercase tracking-[0.2em] drop-shadow-lg">
+                    Premium Live Gaming
                 </p>
 
-                <p class="text-base md:text-lg text-gray-300 mb-12 max-w-2xl mx-auto">
-                    Sincronización instantánea, interfaces profesionales y diversión garantizada para tus eventos.
+                <p class="text-lg md:text-xl text-gray-300 mb-12 max-w-2xl mx-auto leading-relaxed">
+                    Sincronización instantánea y diseño profesional para una experiencia de juego inmersiva.
                 </p>
 
                 <!-- CTAs -->
-                <div class="flex flex-col sm:flex-row gap-6 justify-center items-center mb-16">
+                <div class="flex flex-col sm:flex-row gap-8 justify-center items-center">
                     <a href="/moderator"
-                        class="px-12 py-6 bg-gradient-to-r from-accent to-orange-600 text-white font-display font-bold text-xl rounded-2xl hover:scale-105 transition-all duration-300 hover-glow shadow-[0_20px_50px_rgba(0,0,0,0.5)] flex items-center gap-4">
-                        <i class="fas fa-ticket-alt text-2xl"></i>
+                        class="group relative inline-flex items-center gap-4 px-12 py-6 bg-gradient-to-r from-accent to-orange-600 text-white font-display font-bold text-xl rounded-2xl transition-all duration-300 hover:scale-105 hover:shadow-[0_0_40px_rgba(245,158,11,0.5)] overflow-hidden">
+                        <div
+                            class="absolute inset-0 bg-white/20 translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-700">
+                        </div>
+                        <i class="fas fa-ticket-alt text-2xl group-hover:rotate-12 transition-transform"></i>
                         <span>ABRIR BINGO</span>
                     </a>
                     <a href="/unogame"
-                        class="px-12 py-6 bg-gradient-to-r from-blue-500 to-indigo-600 text-white font-display font-bold text-xl rounded-2xl hover:scale-105 transition-all duration-300 hover-glow shadow-[0_20px_50px_rgba(0,0,0,0.5)] flex items-center gap-4">
-                        <i class="fas fa-layer-group text-2xl"></i>
+                        class="group relative inline-flex items-center gap-4 px-12 py-6 bg-gradient-to-r from-blue-500 to-indigo-600 text-white font-display font-bold text-xl rounded-2xl transition-all duration-300 hover:scale-105 hover:shadow-[0_0_40px_rgba(59,130,246,0.5)] overflow-hidden">
+                        <div
+                            class="absolute inset-0 bg-white/20 translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-700">
+                        </div>
+                        <i class="fas fa-layer-group text-2xl group-hover:scale-110 transition-transform"></i>
                         <span>JUGAR UNO</span>
                     </a>
                 </div>
