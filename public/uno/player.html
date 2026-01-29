@@ -19,16 +19,19 @@
         .uno-card-mini {
             aspect-ratio: 2/3;
             width: 100px;
-            border-radius: 8px;
+            border-radius: 10px;
             display: flex;
             align-items: center;
             justify-content: center;
             font-weight: 900;
-            border: 3px solid white;
+            border: 4px solid white;
             flex-shrink: 0;
             transition: all 0.2s ease;
             cursor: pointer;
-            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.4);
+            position: relative;
+            background-color: #000;
+            overflow: hidden;
         }
 
         .uno-card-mini:active {
@@ -36,23 +39,63 @@
         }
 
         .red {
-            background: linear-gradient(135deg, #ff4b2b, #ff416c);
+            background: #ff5555;
         }
 
         .blue {
-            background: linear-gradient(135deg, #36d1dc, #5b86e5);
+            background: #5555ff;
         }
 
         .green {
-            background: linear-gradient(135deg, #a8e063, #56ab2f);
+            background: #55aa55;
         }
 
         .yellow {
-            background: linear-gradient(135deg, #fce043, #fb7419);
+            background: #ffaa00;
         }
 
         .wild {
-            background: linear-gradient(135deg, #232526, #414345);
+            background: #222;
+        }
+
+        .card-oval-mini {
+            position: absolute;
+            width: 140%;
+            height: 90%;
+            background: white;
+            border-radius: 50%;
+            transform: rotate(25deg);
+            z-index: 1;
+        }
+
+        .card-symbol-mini {
+            font-size: 2.5rem;
+            z-index: 2;
+            transform: rotate(-5deg);
+            /* Slight counter-rotation for symbol */
+            filter: drop-shadow(1px 1px 0px rgba(0, 0, 0, 0.1));
+        }
+
+        .card-corner-mini {
+            position: absolute;
+            font-size: 0.8rem;
+            color: white;
+            z-index: 2;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            font-weight: bold;
+        }
+
+        .corner-top-mini {
+            top: 4px;
+            left: 4px;
+        }
+
+        .corner-bottom-mini {
+            bottom: 4px;
+            right: 4px;
+            transform: rotate(180deg);
         }
 
         .hand-scroll {
@@ -220,13 +263,37 @@
         });
 
         function renderHand(hand) {
-            handContainer.innerHTML = '';
+            handEl.innerHTML = hand.length === 0 ? '<p class="text-gray-500 italic p-4">Tu mano está vacía</p>' : '';
+
             hand.forEach((card, index) => {
-                const div = document.createElement('div');
-                div.className = `uno-card-mini ${card.color} ${myTurn ? 'is-turn' : ''}`;
-                div.innerHTML = `<span class="text-2xl">${getCardSymbol(card.value)}</span>`;
-                div.onclick = () => playCard(index, card);
-                handContainer.appendChild(div);
+                const cardEl = document.createElement('div');
+                const symbol = getCardSymbol(card.value);
+
+                // Map colors for the central symbol
+                const colorMap = {
+                    red: '#ff5555',
+                    blue: '#5555ff',
+                    green: '#55aa55',
+                    yellow: '#ffaa00',
+                    wild: '#000000'
+                };
+                const symColor = colorMap[card.color];
+
+                cardEl.className = `uno-card-mini ${card.color}`;
+                cardEl.innerHTML = `
+                    <div class="card-corner-mini corner-top-mini">
+                        <span>${symbol}</span>
+                    </div>
+                    <div class="card-oval-mini"></div>
+                    <div class="card-symbol-mini" style="color: ${symColor}">
+                        ${symbol}
+                    </div>
+                    <div class="card-corner-mini corner-bottom-mini">
+                        <span>${symbol}</span>
+                    </div>
+                `;
+                cardEl.onclick = () => playCard(index, card);
+                handEl.appendChild(cardEl);
             });
         }
 

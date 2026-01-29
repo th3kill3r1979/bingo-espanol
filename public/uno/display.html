@@ -18,48 +18,84 @@
 
         .uno-card {
             aspect-ratio: 2/3;
-            border-radius: 12px;
+            border-radius: 16px;
             display: flex;
             align-items: center;
             justify-content: center;
             font-weight: 900;
-            font-size: 3rem;
-            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.5);
-            border: 4px solid white;
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.6);
+            border: 6px solid white;
             position: relative;
             transform: rotate(-5deg);
             transition: all 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            background-color: #000;
+            overflow: hidden;
         }
 
         .uno-card.red {
-            background: linear-gradient(135deg, #ff4b2b, #ff416c);
+            background: #ff5555;
         }
 
         .uno-card.blue {
-            background: linear-gradient(135deg, #36d1dc, #5b86e5);
+            background: #5555ff;
         }
 
         .uno-card.green {
-            background: linear-gradient(135deg, #a8e063, #56ab2f);
+            background: #55aa55;
         }
 
         .uno-card.yellow {
-            background: linear-gradient(135deg, #fce043, #fb7419);
+            background: #ffaa00;
         }
 
         .uno-card.wild {
-            background: linear-gradient(135deg, #232526, #414345);
+            background: #222;
         }
 
         .card-inner {
-            width: 80%;
-            height: 80%;
-            border: 2px solid rgba(255, 255, 255, 0.3);
-            border-radius: 50% 50% 50% 50% / 60% 60% 40% 40%;
+            position: absolute;
+            width: 140%;
+            height: 90%;
+            background: white;
+            border-radius: 50%;
+            transform: rotate(25deg);
             display: flex;
             align-items: center;
             justify-content: center;
-            transform: rotate(5deg);
+            z-index: 1;
+        }
+
+        .card-symbol {
+            font-size: 5rem;
+            color: inherit;
+            /* Parent color will be applied via JS */
+            z-index: 2;
+            transform: rotate(-25deg);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            filter: drop-shadow(2px 2px 0px rgba(0, 0, 0, 0.2));
+        }
+
+        .card-corner {
+            position: absolute;
+            font-size: 1.2rem;
+            color: white;
+            z-index: 2;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .corner-top {
+            top: 8px;
+            left: 8px;
+        }
+
+        .corner-bottom {
+            bottom: 8px;
+            right: 8px;
+            transform: rotate(180deg);
         }
 
         .player-hand {
@@ -291,10 +327,32 @@
         }
 
         function updateTopCard(card) {
+            const symbol = getCardSymbol(card.value);
+            const colorClass = card.color === 'wild' ? 'text-gray-900' : `text-${card.color}-500`; // Dynamic color for symbol
+
+            // Map card colors to CSS hex or tailwind equivalent for the symbol
+            const colorMap = {
+                red: '#ff5555',
+                blue: '#5555ff',
+                green: '#55aa55',
+                yellow: '#ffaa00',
+                wild: '#000000'
+            };
+
+            const cardColor = colorMap[card.color];
+
             topCardContainer.innerHTML = `
                 <div class="uno-card ${card.color} w-48 h-72">
+                    <div class="card-corner corner-top">
+                        <span class="text-lg font-bold">${symbol}</span>
+                    </div>
                     <div class="card-inner">
-                        <span class="text-6xl font-black text-white drop-shadow-xl">${getCardSymbol(card.value)}</span>
+                        <div class="card-symbol" style="color: ${cardColor}">
+                            ${symbol}
+                        </div>
+                    </div>
+                    <div class="card-corner corner-bottom">
+                        <span class="text-lg font-bold">${symbol}</span>
                     </div>
                 </div>
             `;
