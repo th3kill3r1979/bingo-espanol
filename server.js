@@ -253,16 +253,18 @@ function shuffle(array) {
   return array;
 }
 
-function resetUnoGame() {
+function resetUnoGame(keepPlayers = false) {
+  const players = keepPlayers ? unoState.players.map(p => ({ ...p, hand: [] })) : [];
+
   unoState = {
     deck: createUnoDeck(),
     discardPile: [],
-    players: [],
+    players: players,
     currentPlayerIndex: 0,
     direction: 1,
     status: 'waiting',
     winner: null,
-    wildColor: unoState.wildColor, // Keep color if resetting during wild selection
+    wildColor: null,
     qrCodeUrl: unoState.qrCodeUrl
   };
 
@@ -397,7 +399,7 @@ io.on('connection', (socket) => {
       return socket.emit('error', { message: 'Se necesitan al menos 2 jugadores.' });
     }
 
-    resetUnoGame();
+    resetUnoGame(true);
     unoState.status = 'playing';
 
     // Deal cards (7 each)
