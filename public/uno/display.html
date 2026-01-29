@@ -97,6 +97,17 @@
         .floating {
             animation: float 4s ease-in-out infinite;
         }
+
+        .qr-placeholder {
+            background: #f3f4f6;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #9ca3af;
+            font-weight: bold;
+            text-align: center;
+            padding: 20px;
+        }
     </style>
 </head>
 
@@ -171,8 +182,15 @@
 
             <!-- QR & Stats -->
             <div class="lg:col-span-1 flex flex-col justify-between">
-                <div class="bg-white rounded-3xl p-6 shadow-2xl">
-                    <img id="qrCode" src="" alt="QR Code" class="w-full">
+                <div
+                    class="bg-white rounded-3xl p-6 shadow-2xl min-h-[300px] flex flex-col items-center justify-center">
+                    <div id="qrLoading" class="qr-placeholder w-full aspect-square rounded-xl">
+                        <div class="flex flex-col items-center">
+                            <i class="fas fa-spinner fa-spin text-3xl mb-4"></i>
+                            <p>GENERANDO QR...</p>
+                        </div>
+                    </div>
+                    <img id="qrCode" src="" alt="QR Code" class="w-full hidden">
                     <p class="text-center text-xs text-gray-900 font-bold mt-4 uppercase">Escanea para jugar</p>
                 </div>
 
@@ -208,7 +226,11 @@
             updateStatus(state.status);
             if (state.topCard) updateTopCard(state.topCard);
             if (state.qrCodeUrl) {
-                document.getElementById('qrCode').src = state.qrCodeUrl;
+                const qrImg = document.getElementById('qrCode');
+                const qrLoading = document.getElementById('qrLoading');
+                qrImg.src = state.qrCodeUrl;
+                qrImg.classList.remove('hidden');
+                qrLoading.classList.add('hidden');
             }
 
             if (state.currentPlayer) {

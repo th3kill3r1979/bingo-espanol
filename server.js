@@ -271,6 +271,7 @@ function resetUnoGame() {
   QRCode.toDataURL(playerUrl, (err, url) => {
     if (!err) {
       unoState.qrCodeUrl = url;
+      sendUnoStateUpdate();
     }
   });
 }
@@ -379,20 +380,16 @@ io.on('connection', (socket) => {
     // Check if player already joined
     const existingPlayer = unoState.players.find(p => p.id === socket.id);
     if (existingPlayer) {
-      existingPlayer.name = playerName;
     } else {
       unoState.players.push(player);
     }
 
-    io.emit('uno-state-update', {
-      players: unoState.players.map(p => ({ id: p.id, name: p.name, cardCount: p.hand.length })),
-      status: unoState.status,
-      currentPlayer: unoState.players[unoState.currentPlayerIndex]?.name,
-      topCard: unoState.discardPile[unoState.discardPile.length - 1],
-      wildColor: unoState.wildColor
-    });
-
+    sendUnoStateUpdate();
     socket.emit('uno-your-hand', player.hand);
+  });
+
+  socket.on('uno-state-request', () => {
+    sendUnoStateUpdate();
   });
 
   socket.on('uno-start', () => {
