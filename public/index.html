@@ -123,59 +123,40 @@
     <section class="relative min-h-screen flex items-center justify-center overflow-hidden">
         <!-- Background Image with Overlay -->
         <div class="absolute inset-0 z-0">
-            <img src="/bingo_hero_background_1769047910138.png" alt="Bingo Time" class="w-full h-full object-cover">
-            <div class="absolute inset-0 hero-gradient"></div>
+            <img src="/hero_bg.png" alt="Bingo & UNO Time" class="w-full h-full object-cover">
+            <div class="absolute inset-0 bg-black/60 backdrop-blur-[2px]"></div>
         </div>
 
         <!-- Content -->
         <div class="relative z-10 container mx-auto px-6 text-center">
             <div class="fade-in">
-                <p class="text-accent font-display text-sm md:text-base tracking-[0.3em] uppercase mb-6">
-                    Sistema en Tiempo Real
-                </p>
+                <img src="/logo.png" alt="Logo Bingo & UNO"
+                    class="w-48 md:w-64 mx-auto mb-8 drop-shadow-[0_0_30px_rgba(139,92,246,0.5)]">
 
-                <h1 class="font-display font-black text-6xl md:text-8xl lg:text-9xl mb-8 leading-none">
-                    BINGO <span class="text-accent">TIME</span>
+                <h1 class="font-display font-black text-6xl md:text-8xl lg:text-9xl mb-8 leading-none tracking-tighter">
+                    BINGO & <span class="text-accent">UNO</span>
                 </h1>
 
-                <p class="text-xl md:text-2xl text-gray-200 mb-4 max-w-3xl mx-auto">
-                    Bingo Español • 90 Bolas • Sincronización Instantánea
+                <p class="text-xl md:text-2xl text-gray-200 mb-4 max-w-3xl mx-auto font-bold uppercase tracking-widest">
+                    La mejor plataforma de juegos en vivo
                 </p>
 
                 <p class="text-base md:text-lg text-gray-300 mb-12 max-w-2xl mx-auto">
-                    La plataforma profesional para organizar juegos de bingo con tecnología WebSocket
+                    Sincronización instantánea, interfaces profesionales y diversión garantizada para tus eventos.
                 </p>
 
                 <!-- CTAs -->
                 <div class="flex flex-col sm:flex-row gap-6 justify-center items-center mb-16">
                     <a href="/moderator"
-                        class="px-10 py-5 bg-gradient-to-r from-accent to-orange-600 text-white font-display font-bold text-lg rounded-full hover:scale-105 transition-all duration-300 hover-glow shadow-2xl">
-                        Jugar BINGO
-                        <i class="fas fa-play ml-2"></i>
+                        class="px-12 py-6 bg-gradient-to-r from-accent to-orange-600 text-white font-display font-bold text-xl rounded-2xl hover:scale-105 transition-all duration-300 hover-glow shadow-[0_20px_50px_rgba(0,0,0,0.5)] flex items-center gap-4">
+                        <i class="fas fa-ticket-alt text-2xl"></i>
+                        <span>ABRIR BINGO</span>
                     </a>
                     <a href="/unogame"
-                        class="px-10 py-5 bg-gradient-to-r from-blue-500 to-indigo-600 text-white font-display font-bold text-lg rounded-full hover:scale-105 transition-all duration-300 hover-glow shadow-2xl">
-                        Jugar UNO
-                        <i class="fas fa-bolt ml-2"></i>
+                        class="px-12 py-6 bg-gradient-to-r from-blue-500 to-indigo-600 text-white font-display font-bold text-xl rounded-2xl hover:scale-105 transition-all duration-300 hover-glow shadow-[0_20px_50px_rgba(0,0,0,0.5)] flex items-center gap-4">
+                        <i class="fas fa-layer-group text-2xl"></i>
+                        <span>JUGAR UNO</span>
                     </a>
-                </div>
-
-                <!-- Stats -->
-                <div class="flex flex-wrap justify-center gap-8 text-center">
-                    <div class="px-6">
-                        <div class="text-4xl font-display font-black text-accent mb-2">90</div>
-                        <div class="text-sm text-gray-300 uppercase tracking-wider">Bolas</div>
-                    </div>
-                    <div class="w-px bg-gradient-to-b from-transparent via-accent to-transparent"></div>
-                    <div class="px-6">
-                        <div class="text-4xl font-display font-black text-secondary mb-2">∞</div>
-                        <div class="text-sm text-gray-300 uppercase tracking-wider">Jugadores</div>
-                    </div>
-                    <div class="w-px bg-gradient-to-b from-transparent via-secondary to-transparent"></div>
-                    <div class="px-6">
-                        <div class="text-4xl font-display font-black text-primary mb-2">3</div>
-                        <div class="text-sm text-gray-300 uppercase tracking-wider">Interfaces</div>
-                    </div>
                 </div>
             </div>
         </div>
