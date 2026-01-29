@@ -509,17 +509,6 @@ io.on('connection', (socket) => {
     unoState.currentPlayerIndex = (unoState.currentPlayerIndex + unoState.direction + unoState.players.length) % unoState.players.length;
   }
 
-  function sendUnoStateUpdate() {
-    io.emit('uno-state-update', {
-      players: unoState.players.map(p => ({ id: p.id, name: p.name, cardCount: p.hand.length })),
-      status: unoState.status,
-      currentPlayer: unoState.players[unoState.currentPlayerIndex]?.name,
-      topCard: unoState.discardPile[unoState.discardPile.length - 1],
-      wildColor: unoState.wildColor,
-      qrCodeUrl: unoState.qrCodeUrl
-    });
-  }
-
   socket.on('disconnect', () => {
     console.log(`Client disconnected: ${socket.id}`);
 
@@ -530,6 +519,18 @@ io.on('connection', (socket) => {
     }
   });
 });
+
+function sendUnoStateUpdate() {
+  io.emit('uno-state-update', {
+    players: unoState.players.map(p => ({ id: p.id, name: p.name, cardCount: p.hand.length })),
+    status: unoState.status,
+    currentPlayer: unoState.players[unoState.currentPlayerIndex]?.name,
+    topCard: unoState.discardPile[unoState.discardPile.length - 1],
+    wildColor: unoState.wildColor,
+    qrCodeUrl: unoState.qrCodeUrl
+  });
+}
+
 
 // Initialize QR code on server start
 const playerUrl = `${BASE_URL}/player`;
