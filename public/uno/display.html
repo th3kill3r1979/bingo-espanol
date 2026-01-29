@@ -207,6 +207,9 @@
             updatePlayers(state.players, state.currentPlayer);
             updateStatus(state.status);
             if (state.topCard) updateTopCard(state.topCard);
+            if (state.qrCodeUrl) {
+                document.getElementById('qrCode').src = state.qrCodeUrl;
+            }
 
             if (state.currentPlayer) {
                 currentPlayerName.textContent = state.currentPlayer;

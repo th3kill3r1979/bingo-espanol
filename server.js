@@ -221,7 +221,8 @@ let unoState = {
   direction: 1, // 1 for clockwise, -1 for counter-clockwise
   status: 'waiting', // waiting, playing, ended
   winner: null,
-  wildColor: null
+  wildColor: null,
+  qrCodeUrl: ''
 };
 
 function createUnoDeck() {
@@ -261,8 +262,17 @@ function resetUnoGame() {
     direction: 1,
     status: 'waiting',
     winner: null,
-    wildColor: null
+    wildColor: unoState.wildColor, // Keep color if resetting during wild selection
+    qrCodeUrl: unoState.qrCodeUrl
   };
+
+  // Generate QR code for UNO
+  const playerUrl = `${BASE_URL}/unoplayer`;
+  QRCode.toDataURL(playerUrl, (err, url) => {
+    if (!err) {
+      unoState.qrCodeUrl = url;
+    }
+  });
 }
 
 // Routes
@@ -508,7 +518,8 @@ io.on('connection', (socket) => {
       status: unoState.status,
       currentPlayer: unoState.players[unoState.currentPlayerIndex]?.name,
       topCard: unoState.discardPile[unoState.discardPile.length - 1],
-      wildColor: unoState.wildColor
+      wildColor: unoState.wildColor,
+      qrCodeUrl: unoState.qrCodeUrl
     });
   }
 
@@ -532,6 +543,10 @@ QRCode.toDataURL(playerUrl, (err, url) => {
 });
 
 // Start server
+// Initialize games
+resetBingoGame();
+resetUnoGame();
+
 server.listen(PORT, () => {
   console.log(`🎰 Bingo Server running on ${BASE_URL}`);
   console.log(`📱 Player URL: ${BASE_URL}/player`);
