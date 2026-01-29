@@ -193,8 +193,8 @@ function validateCard(serialNumber) {
   return validation;
 }
 
-// Reset game
-function resetGame() {
+// --- Bingo Game Functions ---
+function resetBingoGame() {
   gameState = {
     gameId: generateGameId(),
     drawnBalls: [],
@@ -212,9 +212,70 @@ function resetGame() {
   });
 }
 
+// --- UNO Game State ---
+let unoState = {
+  deck: [],
+  discardPile: [],
+  players: [], // { id, name, hand: [] }
+  currentPlayerIndex: 0,
+  direction: 1, // 1 for clockwise, -1 for counter-clockwise
+  status: 'waiting', // waiting, playing, ended
+  winner: null,
+  wildColor: null
+};
+
+function createUnoDeck() {
+  const colors = ['red', 'blue', 'green', 'yellow'];
+  const values = ['0', '1', '2', '3', '4', '5', '6', '7', '8', '9', 'Skip', 'Reverse', '+2'];
+  let deck = [];
+
+  for (const color of colors) {
+    for (const value of values) {
+      deck.push({ color, value });
+      if (value !== '0') deck.push({ color, value }); // Two of each except 0
+    }
+  }
+
+  for (let i = 0; i < 4; i++) {
+    deck.push({ color: 'wild', value: 'Wild' });
+    deck.push({ color: 'wild', value: '+4' });
+  }
+
+  return shuffle(deck);
+}
+
+function shuffle(array) {
+  for (let i = array.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [array[i], array[j]] = [array[j], array[i]];
+  }
+  return array;
+}
+
+function resetUnoGame() {
+  unoState = {
+    deck: createUnoDeck(),
+    discardPile: [],
+    players: [],
+    currentPlayerIndex: 0,
+    direction: 1,
+    status: 'waiting',
+    winner: null,
+    wildColor: null
+  };
+}
+
 // Routes
 app.get('/', (req, res) => {
   res.sendFile(path.join(__dirname, 'public', 'index.html'));
+});
+
+app.get('/unogame', (req, res) => {
+  res.sendFile(path.join(__dirname, 'public', 'uno', 'display.html'));
+});
+
+app.get('/unoplayer', (req, res) => {
+  res.sendFile(path.join(__dirname, 'public', 'uno', 'player.html'));
 });
 
 app.get('/moderator', (req, res) => {
@@ -244,22 +305,35 @@ io.on('connection', (socket) => {
   // Handle player requesting a card
   socket.on('request-card', (data) => {
     const playerName = data?.playerName || 'Jugador';
+    const requestedSerial = data?.serialNumber;
+    const requestedGameId = data?.gameId;
 
-    // Check if this session already has a card
-    let serialNumber = gameState.playerSessions.get(socket.id);
     let card;
 
-    if (serialNumber && gameState.cards.has(serialNumber)) {
-      // Return existing card
-      card = gameState.cards.get(serialNumber);
-      // Update name if provided
-      if (data?.playerName) {
-        card.playerName = playerName;
+    // 1. Try to recover by serial number if game matches
+    if (requestedSerial && requestedGameId === gameState.gameId) {
+      if (gameState.cards.has(requestedSerial)) {
+        card = gameState.cards.get(requestedSerial);
+        // Update name if it changed
+        if (data?.playerName) {
+          card.playerName = playerName;
+        }
+        gameState.playerSessions.set(socket.id, card.serialNumber);
       }
-    } else {
-      // Generate new card
+    }
+
+    // 2. Fallback to existing session by socket.id (unlikely after refresh)
+    if (!card) {
+      let serialNumber = gameState.playerSessions.get(socket.id);
+      if (serialNumber && gameState.cards.has(serialNumber)) {
+        card = gameState.cards.get(serialNumber);
+      }
+    }
+
+    // 3. Generate new card if nothing recovered
+    if (!card) {
       card = generateSpanishBingoCard();
-      card.playerName = playerName; // Add player name to card
+      card.playerName = playerName;
       gameState.cards.set(card.serialNumber, card);
       gameState.playerSessions.set(socket.id, card.serialNumber);
     }
@@ -283,53 +357,169 @@ io.on('connection', (socket) => {
     }
   });
 
-  // Handle game reset
-  socket.on('reset-game', () => {
-    resetGame();
-    io.emit('game-reset', {
-      gameId: gameState.gameId,
-      qrCodeUrl: gameState.qrCodeUrl
-    });
-  });
+  // --- UNO Event Handlers ---
+  socket.on('uno-join', (data) => {
+    const playerName = data?.playerName || 'Jugador UNO';
+    const player = {
+      id: socket.id,
+      name: playerName,
+      hand: []
+    };
 
-  // Handle card validation
-  socket.on('validate-card', (data) => {
-    const validation = validateCard(data.serialNumber);
-    if (validation) {
-      socket.emit('card-validated', validation);
+    // Check if player already joined
+    const existingPlayer = unoState.players.find(p => p.id === socket.id);
+    if (existingPlayer) {
+      existingPlayer.name = playerName;
     } else {
-      socket.emit('error', { message: 'Card not found!' });
+      unoState.players.push(player);
     }
-  });
 
-  // Handle line winner announcement
-  socket.on('announce-line', (data) => {
-    io.emit('winner-line', {
-      playerName: data.playerName,
-      serialNumber: data.serialNumber,
-      lines: data.lines
+    io.emit('uno-state-update', {
+      players: unoState.players.map(p => ({ id: p.id, name: p.name, cardCount: p.hand.length })),
+      status: unoState.status,
+      currentPlayer: unoState.players[unoState.currentPlayerIndex]?.name,
+      topCard: unoState.discardPile[unoState.discardPile.length - 1],
+      wildColor: unoState.wildColor
     });
+
+    socket.emit('uno-your-hand', player.hand);
   });
 
-  // Handle bingo winner announcement
-  socket.on('announce-bingo', (data) => {
-    io.emit('winner-bingo', {
-      playerName: data.playerName,
-      serialNumber: data.serialNumber
+  socket.on('uno-start', () => {
+    if (unoState.players.length < 2) {
+      return socket.emit('error', { message: 'Se necesitan al menos 2 jugadores.' });
+    }
+
+    resetUnoGame();
+    unoState.status = 'playing';
+
+    // Deal cards (7 each)
+    unoState.players.forEach(p => {
+      p.hand = unoState.deck.splice(0, 7);
     });
+
+    // Initial discard
+    let initialCard = unoState.deck.pop();
+    while (initialCard.color === 'wild') {
+      unoState.deck.unshift(initialCard);
+      initialCard = unoState.deck.pop();
+    }
+    unoState.discardPile.push(initialCard);
+
+    io.emit('uno-game-started', {
+      topCard: initialCard,
+      currentPlayer: unoState.players[unoState.currentPlayerIndex].name
+    });
+
+    unoState.players.forEach(p => {
+      io.to(p.id).emit('uno-your-hand', p.hand);
+    });
+
+    sendUnoStateUpdate();
   });
 
-  // Send current game state to newly connected clients
-  socket.emit('game-state', {
-    gameId: gameState.gameId,
-    drawnBalls: gameState.drawnBalls,
-    qrCodeUrl: gameState.qrCodeUrl
+  socket.on('uno-play-card', (data) => {
+    const player = unoState.players.find(p => p.id === socket.id);
+    if (!player || unoState.players[unoState.currentPlayerIndex].id !== socket.id) {
+      return socket.emit('error', { message: 'No es tu turno.' });
+    }
+
+    const cardIndex = data.cardIndex;
+    const card = player.hand[cardIndex];
+    const topCard = unoState.discardPile[unoState.discardPile.length - 1];
+
+    // Check if card matches
+    const isColorMatch = card.color === topCard.color || card.color === unoState.wildColor;
+    const isValueMatch = card.value === topCard.value;
+    const isWild = card.color === 'wild';
+
+    if (!isColorMatch && !isValueMatch && !isWild) {
+      return socket.emit('error', { message: 'La carta no coincide con el color o valor.' });
+    }
+
+    // Play card
+    player.hand.splice(cardIndex, 1);
+    unoState.discardPile.push(card);
+    unoState.wildColor = null;
+
+    // Handle special cards
+    if (card.value === 'Skip') {
+      nextTurn();
+    } else if (card.value === 'Reverse') {
+      unoState.direction *= -1;
+      if (unoState.players.length === 2) nextTurn();
+    } else if (card.value === '+2') {
+      nextTurn();
+      const nextPlayer = unoState.players[unoState.currentPlayerIndex];
+      nextPlayer.hand.push(...unoState.deck.splice(0, 2));
+      io.to(nextPlayer.id).emit('uno-your-hand', nextPlayer.hand);
+    } else if (card.value === '+4') {
+      nextTurn();
+      const nextPlayer = unoState.players[unoState.currentPlayerIndex];
+      nextPlayer.hand.push(...unoState.deck.splice(0, 4));
+      io.to(nextPlayer.id).emit('uno-your-hand', nextPlayer.hand);
+    }
+
+    // Check for win
+    if (player.hand.length === 0) {
+      unoState.status = 'ended';
+      unoState.winner = player.name;
+      io.emit('uno-game-over', { winner: player.name });
+    } else {
+      if (!isWild) nextTurn();
+      // If wild, wait for uno-wild-color
+    }
+
+    socket.emit('uno-your-hand', player.hand);
+    sendUnoStateUpdate();
   });
+
+  socket.on('uno-draw-card', () => {
+    const player = unoState.players.find(p => p.id === socket.id);
+    if (!player || unoState.players[unoState.currentPlayerIndex].id !== socket.id) {
+      return socket.emit('error', { message: 'No es tu turno.' });
+    }
+
+    if (unoState.deck.length === 0) {
+      const topCard = unoState.discardPile.pop();
+      unoState.deck = shuffle([...unoState.discardPile]);
+      unoState.discardPile = [topCard];
+    }
+
+    player.hand.push(unoState.deck.pop());
+    socket.emit('uno-your-hand', player.hand);
+    nextTurn();
+    sendUnoStateUpdate();
+  });
+
+  socket.on('uno-wild-color', (data) => {
+    unoState.wildColor = data.color;
+    nextTurn();
+    sendUnoStateUpdate();
+  });
+
+  function nextTurn() {
+    unoState.currentPlayerIndex = (unoState.currentPlayerIndex + unoState.direction + unoState.players.length) % unoState.players.length;
+  }
+
+  function sendUnoStateUpdate() {
+    io.emit('uno-state-update', {
+      players: unoState.players.map(p => ({ id: p.id, name: p.name, cardCount: p.hand.length })),
+      status: unoState.status,
+      currentPlayer: unoState.players[unoState.currentPlayerIndex]?.name,
+      topCard: unoState.discardPile[unoState.discardPile.length - 1],
+      wildColor: unoState.wildColor
+    });
+  }
 
   socket.on('disconnect', () => {
     console.log(`Client disconnected: ${socket.id}`);
-    // Keep the card in memory even after disconnect
-    // Player can reconnect and get the same card
+
+    // Remove from UNO players if not started
+    if (unoState.status === 'waiting') {
+      unoState.players = unoState.players.filter(p => p.id !== socket.id);
+      sendUnoStateUpdate();
+    }
   });
 });
 

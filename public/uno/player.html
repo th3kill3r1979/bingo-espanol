@@ -1,0 +1,252 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tu Mano UNO</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="/socket.io/socket.io.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;700;900&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Outfit', sans-serif;
+            background: #0f0f1a;
+            user-select: none;
+        }
+
+        .uno-card-mini {
+            aspect-ratio: 2/3;
+            width: 100px;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 900;
+            border: 3px solid white;
+            flex-shrink: 0;
+            transition: all 0.2s ease;
+            cursor: pointer;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+        }
+
+        .uno-card-mini:active {
+            transform: scale(0.95) translateY(-10px);
+        }
+
+        .red {
+            background: linear-gradient(135deg, #ff4b2b, #ff416c);
+        }
+
+        .blue {
+            background: linear-gradient(135deg, #36d1dc, #5b86e5);
+        }
+
+        .green {
+            background: linear-gradient(135deg, #a8e063, #56ab2f);
+        }
+
+        .yellow {
+            background: linear-gradient(135deg, #fce043, #fb7419);
+        }
+
+        .wild {
+            background: linear-gradient(135deg, #232526, #414345);
+        }
+
+        .hand-scroll {
+            display: flex;
+            gap: 10px;
+            overflow-x: auto;
+            padding: 20px;
+            scrollbar-width: none;
+        }
+
+        .hand-scroll::-webkit-scrollbar {
+            display: none;
+        }
+
+        .is-turn {
+            border: 4px solid #facc15;
+            box-shadow: 0 0 20px rgba(250, 204, 21, 0.5);
+        }
+
+        .color-bubble {
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            border: 3px solid white;
+            cursor: pointer;
+            transition: transform 0.2s;
+        }
+
+        .color-bubble:active {
+            transform: scale(0.9);
+        }
+    </style>
+</head>
+
+<body class="min-h-screen text-white flex flex-col">
+    <!-- Login Screen -->
+    <div id="loginScreen"
+        class="flex-1 flex flex-col items-center justify-center p-8 bg-gradient-to-br from-indigo-900 to-purple-900">
+        <h1 class="text-4xl font-black mb-12 text-center tracking-tighter">ÚNETE AL JUEGO UNO</h1>
+        <div class="w-full max-w-sm space-y-4">
+            <input type="text" id="playerNameInput" placeholder="Tu Apodo"
+                class="w-full px-6 py-4 rounded-2xl bg-white/10 border border-white/20 text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-yellow-400 text-lg">
+            <button id="joinGameBtn"
+                class="w-full bg-yellow-400 hover:bg-yellow-500 text-gray-900 font-black py-4 rounded-2xl text-xl transition-all shadow-xl">
+                ENTRAR A LA SALA
+            </button>
+        </div>
+    </div>
+
+    <!-- Game View -->
+    <div id="gameView" class="hidden flex-1 flex flex-col p-4">
+        <!-- Header Info -->
+        <div class="flex justify-between items-center mb-6 pt-4 px-2">
+            <div>
+                <p id="playerNameDisplay" class="text-2xl font-black uppercase tracking-tighter text-yellow-400">-</p>
+                <p id="turnStatus" class="text-xs font-bold text-gray-500 uppercase">Esperando inicio...</p>
+            </div>
+            <div class="bg-white/10 px-4 py-2 rounded-xl text-center">
+                <p class="text-[10px] text-gray-400 uppercase font-black">Tu lugar</p>
+                <p id="playerPos" class="font-bold">#?</p>
+            </div>
+        </div>
+
+        <!-- Central Top Card (Displaying for reference) -->
+        <div class="flex justify-center mb-12">
+            <div class="text-center">
+                <p class="text-[10px] text-gray-500 font-black uppercase mb-2">Carta en Mesa</p>
+                <div id="mesaCard" class="uno-card-mini opacity-50 grayscale scale-75 border-gray-500">?</div>
+            </div>
+        </div>
+
+        <!-- Action Area -->
+        <div class="flex justify-center mb-8">
+            <button id="drawCardBtn"
+                class="bg-gradient-to-r from-gray-700 to-black px-12 py-6 rounded-3xl border-2 border-white/20 shadow-xl active:scale-95 transition-all">
+                <p class="text-3xl font-black mb-1">TOMAR</p>
+                <p class="text-xs text-gray-400 uppercase font-bold tracking-widest">Del Mazo</p>
+            </button>
+        </div>
+
+        <!-- Hand Area -->
+        <div class="mt-auto">
+            <div class="flex justify-between items-center px-4 mb-2">
+                <p class="text-xs font-black text-gray-500 uppercase tracking-widest">Tus Cartas</p>
+                <p id="cardCount" class="text-xs font-bold text-yellow-400">Total: 0</p>
+            </div>
+            <div id="handContainer" class="hand-scroll border-t border-white/10">
+                <!-- Cards injected here -->
+            </div>
+        </div>
+    </div>
+
+    <!-- Wild Color Overlay -->
+    <div id="wildOverlay"
+        class="hidden fixed inset-0 z-50 bg-black/90 backdrop-blur-xl flex flex-col items-center justify-center p-8">
+        <h2 class="text-3xl font-black mb-12 italic text-center">ELEGÍ UN COLOR</h2>
+        <div class="grid grid-cols-2 gap-6">
+            <div class="color-bubble red" onclick="chooseColor('red')"></div>
+            <div class="color-bubble blue" onclick="chooseColor('blue')"></div>
+            <div class="color-bubble green" onclick="chooseColor('green')"></div>
+            <div class="color-bubble yellow" onclick="chooseColor('yellow')"></div>
+        </div>
+    </div>
+
+    <script>
+        const socket = io();
+        let myTurn = false;
+        let playerName = '';
+
+        // DOM
+        const loginScreen = document.getElementById('loginScreen');
+        const gameView = document.getElementById('gameView');
+        const playerNameInput = document.getElementById('playerNameInput');
+        const joinGameBtn = document.getElementById('joinGameBtn');
+        const playerNameDisplay = document.getElementById('playerNameDisplay');
+        const turnStatus = document.getElementById('turnStatus');
+        const handContainer = document.getElementById('handContainer');
+        const drawCardBtn = document.getElementById('drawCardBtn');
+        const mesaCard = document.getElementById('mesaCard');
+        const wildOverlay = document.getElementById('wildOverlay');
+
+        joinGameBtn.addEventListener('click', () => {
+            playerName = playerNameInput.value.trim();
+            if (playerName) {
+                socket.emit('uno-join', { playerName });
+                loginScreen.classList.add('hidden');
+                gameView.classList.remove('hidden');
+                playerNameDisplay.textContent = playerName;
+            }
+        });
+
+        socket.on('uno-your-hand', (hand) => {
+            renderHand(hand);
+            document.getElementById('cardCount').textContent = `Total: ${hand.length}`;
+        });
+
+        socket.on('uno-state-update', (state) => {
+            const currentPlayer = state.currentPlayer;
+            if (currentPlayer === playerName) {
+                myTurn = true;
+                turnStatus.textContent = '¡ES TU TURNO!';
+                turnStatus.classList.replace('text-gray-500', 'text-yellow-400');
+            } else {
+                myTurn = false;
+                turnStatus.textContent = `Turno de ${currentPlayer || '...'}`;
+                turnStatus.classList.replace('text-yellow-400', 'text-gray-500');
+            }
+
+            if (state.topCard) {
+                mesaCard.className = `uno-card-mini ${state.topCard.color}`;
+                mesaCard.textContent = getCardSymbol(state.topCard.value);
+                mesaCard.classList.remove('opacity-50', 'grayscale', 'border-gray-500');
+            }
+        });
+
+        drawCardBtn.addEventListener('click', () => {
+            if (myTurn) socket.emit('uno-draw-card');
+        });
+
+        function renderHand(hand) {
+            handContainer.innerHTML = '';
+            hand.forEach((card, index) => {
+                const div = document.createElement('div');
+                div.className = `uno-card-mini ${card.color} ${myTurn ? 'is-turn' : ''}`;
+                div.innerHTML = `<span class="text-2xl">${getCardSymbol(card.value)}</span>`;
+                div.onclick = () => playCard(index, card);
+                handContainer.appendChild(div);
+            });
+        }
+
+        function playCard(index, card) {
+            if (!myTurn) return;
+            socket.emit('uno-play-card', { cardIndex: index });
+            if (card.color === 'wild') {
+                wildOverlay.classList.remove('hidden');
+            }
+        }
+
+        function chooseColor(color) {
+            socket.emit('uno-wild-color', { color });
+            wildOverlay.classList.add('hidden');
+        }
+
+        function getCardSymbol(value) {
+            if (value === 'Skip') return '🚫';
+            if (value === 'Reverse') return '🔁';
+            if (value === '+2') return '+2';
+            if (value === '+4') return '+4';
+            if (value === 'Wild') return '🎨';
+            return value;
+        }
+
+        socket.on('error', (data) => alert(data.message));
+    </script>
+</body>
+
+</html>

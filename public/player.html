@@ -279,7 +279,15 @@
 
         function connectAndRequestCard() {
             if (socket.connected) {
-                socket.emit('request-card', { playerName });
+                // Recover stored card info
+                const savedSerial = localStorage.getItem('bingoSerialNumber');
+                const savedGameId = localStorage.getItem('bingoGameId');
+
+                socket.emit('request-card', {
+                    playerName,
+                    serialNumber: savedSerial,
+                    gameId: savedGameId
+                });
             } else {
                 socket.connect();
             }
@@ -311,7 +319,7 @@
         // Request a card when connected
         socket.on('connect', () => {
             if (playerName) {
-                socket.emit('request-card', { playerName });
+                connectAndRequestCard();
             }
         });
 
@@ -319,6 +327,10 @@
         socket.on('card-assigned', (data) => {
             currentGameId = data.gameId;
             myCard = data.card;
+
+            // Store card info for persistence
+            localStorage.setItem('bingoSerialNumber', data.card.serialNumber);
+            localStorage.setItem('bingoGameId', data.gameId);
 
             gameIdEl.textContent = data.gameId;
             serialNumberEl.textContent = data.card.serialNumber;

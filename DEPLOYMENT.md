@@ -12,7 +12,41 @@ Tu aplicación ya está lista para deployment con las siguientes configuraciones
 
 ---
 
-## 🎯 Opción 1: Render (Recomendado - Gratis)
+## 🎯 Opción 1: Google Cloud Run (Actual - Recomendado)
+
+### Ventajas
+- ✅ **Serverless**: Pago por uso (muy barato o gratis en nivel bajo)
+- ✅ WebSockets soportados
+- ✅ SSL automático (HTTPS)
+- ✅ Escalado automático
+- ✅ Pipeline robusto
+
+### Pasos para Deploy (gcloud CLI)
+
+1. **Build y Push**:
+   ```bash
+   gcloud builds submit --tag gcr.io/TU_PROYECTO/bingo-espanol
+   ```
+
+2. **Deploy**:
+   ```bash
+   gcloud run deploy bingo-espanol \
+     --image gcr.io/TU_PROYECTO/bingo-espanol \
+     --platform managed \
+     --region us-central1 \
+     --allow-unauthenticated
+   ```
+
+3. **Configurar BASE_URL**:
+   ```bash
+   gcloud run services update bingo-espanol \
+     --region us-central1 \
+     --set-env-vars BASE_URL=https://tu-app-url.run.app
+   ```
+
+---
+
+## 🎯 Opción 2: Render (Alternativa Gratis)
 
 ### Ventajas
 - ✅ **100% Gratis** para proyectos pequeños
@@ -301,12 +335,12 @@ app.use(cors());
 
 - [x] Código actualizado con URLs dinámicas
 - [x] `package.json` con engines
-- [x] `render.yaml` creado
+- [x] `Dockerfile` configurado (para Cloud Run)
 - [x] `.gitignore` configurado
-- [ ] Repositorio en GitHub creado
-- [ ] Cuenta en Render/Railway creada
-- [ ] Variables de entorno configuradas
-- [ ] Primera prueba de deployment realizada
+- [x] Repositorio en GitHub configurado
+- [x] Deployment en Cloud Run realizado
+- [x] Variable `BASE_URL` configurada con HTTPS
+- [x] Pruebas de funcionamiento realizadas
 
 ---
 
