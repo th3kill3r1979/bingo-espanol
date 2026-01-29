@@ -204,7 +204,7 @@
     </div>
 
     <script>
-        const socket = io();
+        const socket = io({ transports: ['websocket'] });
 
         // DOM Elements
         const playersList = document.getElementById('playersList');

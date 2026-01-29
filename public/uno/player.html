@@ -158,7 +158,7 @@
     </div>
 
     <script>
-        const socket = io();
+        const socket = io({ transports: ['websocket'] });
         let myTurn = false;
         let playerName = '';
 

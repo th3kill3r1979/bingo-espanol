@@ -104,7 +104,7 @@
     </style>
 
     <script>
-        const socket = io();
+        const socket = io({ transports: ['websocket'] });
         let drawnBalls = [];
 
         // DOM Elements

@@ -229,7 +229,7 @@
     </div>
 
     <script>
-        const socket = io();
+        const socket = io({ transports: ['websocket'] });
         let myCard = null;
         let currentGameId = '';
         let markedNumbers = new Set();
