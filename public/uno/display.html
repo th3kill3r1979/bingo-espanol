@@ -146,6 +146,93 @@
             text-align: center;
             padding: 20px;
         }
+
+        .disconnected-player {
+            opacity: 0.5;
+            filter: grayscale(70%);
+        }
+
+        .kick-btn {
+            background: #ef4444;
+            color: white;
+            border: none;
+            padding: 6px 12px;
+            border-radius: 8px;
+            font-size: 11px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.2s;
+            text-transform: uppercase;
+        }
+
+        .kick-btn:hover {
+            background: #dc2626;
+            transform: scale(1.05);
+        }
+
+        .disconnected-label {
+            background: #6b7280;
+            color: white;
+            padding: 2px 8px;
+            border-radius: 6px;
+            font-size: 10px;
+            font-weight: 700;
+            text-transform: uppercase;
+        }
+
+        /* Draw Stack Indicator */
+        .draw-stack-display {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: linear-gradient(135deg, #ef4444, #dc2626);
+            border-radius: 20px;
+            padding: 20px 30px;
+            box-shadow: 0 10px 40px rgba(239, 68, 68, 0.6);
+            z-index: 10;
+            animation: pulse 2s infinite;
+        }
+
+        .draw-stack-counter {
+            font-size: 4rem;
+            font-weight: 900;
+            color: white;
+            text-align: center;
+            text-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+        }
+
+        /* Chat Panel */
+        .chat-display {
+            background: rgba(0, 0, 0, 0.5);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 16px;
+            padding: 16px;
+            max-height: 400px;
+        }
+
+        .chat-display h3 {
+            font-size: 14px;
+            font-weight: 700;
+            text-transform: uppercase;
+            color: #9ca3af;
+            margin-bottom: 12px;
+        }
+
+        #displayChatMessages {
+            max-height: 300px;
+            overflow-y: auto;
+            font-size: 11px;
+            scrollbar-width: thin;
+        }
+
+        .display-chat-message {
+            padding: 6px 8px;
+            margin-bottom: 4px;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 8px;
+            line-height: 1.4;
+        }
     </style>
 </head>
 
@@ -193,6 +280,12 @@
                         Reiniciar Ronda
                     </button>
                 </div>
+
+                <!-- Chat Display -->
+                <div class="chat-display mt-6">
+                    <h3>💬 Chat</h3>
+                    <div id="displayChatMessages"></div>
+                </div>
             </div>
 
             <!-- Central Game Area -->
@@ -227,6 +320,14 @@
                 <div id="turnIndicator"
                     class="text-3xl font-black text-yellow-400 uppercase tracking-tighter animate-pulse hidden">
                     Turno de: <span id="currentPlayerName">-</span>
+                </div>
+
+                <!-- Draw Stack Display -->
+                <div id="drawStackDisplay" class="hidden draw-stack-display">
+                    <div class="draw-stack-counter">
+                        +<span id="drawStackValue">0</span>
+                    </div>
+                    <p class="text-sm text-white text-center font-bold mt-2">Cartas acumuladas</p>
                 </div>
             </div>
 
@@ -295,6 +396,21 @@
             } else {
                 wildColorArea.classList.add('hidden');
             }
+
+            // Update draw stack display
+            const drawStackDisplay = document.getElementById('drawStackDisplay');
+            const drawStackValue = document.getElementById('drawStackValue');
+            if (state.drawStack > 0) {
+                drawStackDisplay.classList.remove('hidden');
+                drawStackValue.textContent = state.drawStack;
+            } else {
+                drawStackDisplay.classList.add('hidden');
+            }
+
+            // Update chat (keep last 15 messages)
+            if (state.chatMessages && state.chatMessages.length > 0) {
+                updateChatDisplay(state.chatMessages);
+            }
         });
 
         socket.on('uno-game-over', (data) => {
@@ -317,15 +433,38 @@
             playersList.innerHTML = '';
             players.forEach(p => {
                 const div = document.createElement('div');
-                div.className = `p-4 rounded-2xl flex justify-between items-center transition-all ${p.name === currentPlayerName ? 'active-player bg-white/20' : 'bg-white/5 border border-white/10'}`;
+                const isDisconnected = p.connected === false;
+                const disconnectedClass = isDisconnected ? 'disconnected-player' : '';
+                const activeClass = p.name === currentPlayerName && !isDisconnected ? 'active-player bg-white/20' : 'bg-white/5 border border-white/10';
+
+                div.className = `p-4 rounded-2xl flex justify-between items-center gap-3 transition-all ${activeClass} ${disconnectedClass}`;
+
+                let statusBadge;
+                if (isDisconnected) {
+                    const timeAgo = getTimeAgo(p.lastSeen);
+                    statusBadge = `<span class="disconnected-label">Desconectado (${timeAgo})</span>`;
+                } else {
+                    statusBadge = `<span class="bg-yellow-500 text-gray-900 px-3 py-1 rounded-full text-xs font-black shadow-lg">${p.cardCount} cartas</span>`;
+                }
+
                 div.innerHTML = `
-                    <span class="font-bold">${p.name}</span>
-                    <span class="bg-yellow-500 text-gray-900 px-3 py-1 rounded-full text-xs font-black shadow-lg">
-                        ${p.cardCount} cartas
-                    </span>
+                    <span class="font-bold flex-1">${p.name}</span>
+                    ${statusBadge}
+                    <button class="kick-btn" onclick="kickPlayer('${p.id}', '${p.name}')" title="Expulsar jugador">
+                        🚫 KICK
+                    </button>
                 `;
                 playersList.appendChild(div);
             });
+        }
+
+        function getTimeAgo(timestamp) {
+            if (!timestamp) return '?';
+            const seconds = Math.floor((Date.now() - timestamp) / 1000);
+            if (seconds < 60) return `${seconds}s`;
+            const minutes = Math.floor(seconds / 60);
+            if (minutes < 60) return `${minutes}m`;
+            return `${Math.floor(minutes / 60)}h`;
         }
 
         function updateTopCard(card) {
@@ -382,6 +521,34 @@
                 restartRndBtn.classList.add('hidden');
             }
         }
+
+        function kickPlayer(playerId, playerName) {
+            if (confirm(`¿Estás seguro de expulsar a ${playerName}?`)) {
+                socket.emit('uno-kick-player', { playerId });
+            }
+        }
+
+        // Chat functionality
+        const displayChatMessages = document.getElementById('displayChatMessages');
+
+        function updateChatDisplay(messages) {
+            displayChatMessages.innerHTML = '';
+            messages.forEach(msg => {
+                const msgDiv = document.createElement('div');
+                msgDiv.className = 'display-chat-message';
+                msgDiv.innerHTML = `<strong>${msg.playerName}:</strong> ${msg.text}`;
+                displayChatMessages.appendChild(msgDiv);
+            });
+            displayChatMessages.scrollTop = displayChatMessages.scrollHeight;
+        }
+
+        socket.on('uno-chat-update', (message) => {
+            const msgDiv = document.createElement('div');
+            msgDiv.className = 'display-chat-message';
+            msgDiv.innerHTML = `<strong>${message.playerName}:</strong> ${message.text}`;
+            displayChatMessages.appendChild(msgDiv);
+            displayChatMessages.scrollTop = displayChatMessages.scrollHeight;
+        });
     </script>
 </body>
 

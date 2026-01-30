@@ -130,6 +130,123 @@
         .color-bubble:active {
             transform: scale(0.9);
         }
+
+        /* Chat styles */
+        .chat-container {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            width: 280px;
+            max-width: calc(100vw - 40px);
+            background: rgba(0, 0, 0, 0.9);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 16px;
+            padding: 12px;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.5);
+        }
+
+        .chat-messages {
+            height: 180px;
+            overflow-y: auto;
+            margin-bottom: 10px;
+            font-size: 11px;
+            scrollbar-width: thin;
+        }
+
+        .chat-message {
+            padding: 6px 8px;
+            margin-bottom: 4px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 8px;
+            line-height: 1.4;
+        }
+
+        .chat-input-container {
+            display: flex;
+            gap: 6px;
+        }
+
+        #chatInput {
+            flex: 1;
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            padding: 8px 10px;
+            border-radius: 10px;
+            color: white;
+            font-size: 11px;
+        }
+
+        #chatSendBtn {
+            background: #facc15;
+            color: #000;
+            border: none;
+            padding: 8px 14px;
+            border-radius: 10px;
+            font-weight: 700;
+            font-size: 11px;
+            cursor: pointer;
+        }
+
+        /* Draw stack warning */
+        .draw-stack-warning {
+            background: linear-gradient(135deg, #ef4444, #dc2626);
+            color: white;
+            padding: 12px 16px;
+            border-radius: 12px;
+            text-align: center;
+            margin-bottom: 12px;
+            font-weight: 700;
+            box-shadow: 0 5px 20px rgba(239, 68, 68, 0.4);
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+
+            0%,
+            100% {
+                opacity: 1;
+            }
+
+            50% {
+                opacity: 0.8;
+            }
+        }
+
+        /* Notification Toast */
+        .notification {
+            position: fixed;
+            top: 80px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(0, 0, 0, 0.9);
+            color: white;
+            padding: 16px 24px;
+            border-radius: 12px;
+            font-weight: 700;
+            z-index: 1000;
+            animation: slideDown 0.3s ease;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+        }
+
+        .notification.success {
+            background: linear-gradient(135deg, #10b981, #059669);
+        }
+
+        .notification.error {
+            background: linear-gradient(135deg, #ef4444, #dc2626);
+        }
+
+        @keyframes slideDown {
+            from {
+                opacity: 0;
+                transform: translateX(-50%) translateY(-20px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateX(-50%) translateY(0);
+            }
+        }
     </style>
 </head>
 
@@ -141,6 +258,12 @@
             <i class="fas fa-home text-white group-hover:scale-110"></i>
         </a>
     </div>
+
+    <!-- Notification Toast -->
+    <div id="notification" class="hidden notification">
+        <span id="notificationText"></span>
+    </div>
+
     <!-- Login Screen -->
     <div id="loginScreen"
         class="flex-1 flex flex-col items-center justify-center p-8 bg-gradient-to-br from-indigo-900 to-purple-900">
@@ -167,6 +290,12 @@
                 <p class="text-[10px] text-gray-400 uppercase font-black">Tu lugar</p>
                 <p id="playerPos" class="font-bold">#?</p>
             </div>
+        </div>
+
+        <!-- Draw Stack Warning -->
+        <div id="drawStackWarning" class="hidden draw-stack-warning">
+            ⚠️ ¡Hay <span id="drawStackCount">0</span> cartas acumuladas!
+            <br><span class="text-sm">Juega un +2 o +4 o roba las cartas.</span>
         </div>
 
         <!-- Central Top Card (Displaying for reference) -->
@@ -210,10 +339,23 @@
         </div>
     </div>
 
+    <!-- Chat Container -->
+    <div class="chat-container">
+        <div id="chatMessages" class="chat-messages"></div>
+        <div class="chat-input-container">
+            <input type="text" id="chatInput" placeholder="Escribe un mensaje..." maxlength="200" />
+            <button id="chatSendBtn">Enviar</button>
+        </div>
+    </div>
+
     <script>
         const socket = io({ transports: ['websocket'] });
         let myTurn = false;
         let playerName = '';
+
+        // Session management
+        const SESSION_TOKEN_KEY = 'uno_session_token';
+        let sessionToken = localStorage.getItem(SESSION_TOKEN_KEY);
 
         // DOM
         const loginScreen = document.getElementById('loginScreen');
@@ -230,7 +372,11 @@
         joinGameBtn.addEventListener('click', () => {
             playerName = playerNameInput.value.trim();
             if (playerName) {
-                socket.emit('uno-join', { playerName });
+                // Send session token if it exists (for reconnection)
+                socket.emit('uno-join', {
+                    playerName,
+                    sessionToken
+                });
                 loginScreen.classList.add('hidden');
                 gameView.classList.remove('hidden');
                 playerNameDisplay.textContent = playerName;
@@ -258,6 +404,16 @@
                 mesaCard.className = `uno-card-mini ${state.topCard.color}`;
                 mesaCard.textContent = getCardSymbol(state.topCard.value);
                 mesaCard.classList.remove('opacity-50', 'grayscale', 'border-gray-500');
+            }
+
+            // Update draw stack warning
+            const drawStackWarning = document.getElementById('drawStackWarning');
+            const drawStackCount = document.getElementById('drawStackCount');
+            if (state.drawStack > 0) {
+                drawStackWarning.classList.remove('hidden');
+                drawStackCount.textContent = state.drawStack;
+            } else {
+                drawStackWarning.classList.add('hidden');
             }
         });
 
@@ -323,6 +479,68 @@
         }
 
         socket.on('error', (data) => alert(data.message));
+
+        // Chat functionality
+        const chatMessages = document.getElementById('chatMessages');
+        const chatInput = document.getElementById('chatInput');
+        const chatSendBtn = document.getElementById('chatSendBtn');
+
+        chatSendBtn.addEventListener('click', sendChatMessage);
+        chatInput.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') sendChatMessage();
+        });
+
+        function sendChatMessage() {
+            const text = chatInput.value.trim();
+            if (text) {
+                socket.emit('uno-chat-message', { text });
+                chatInput.value = '';
+            }
+        }
+
+        socket.on('uno-chat-update', (message) => {
+            const msgDiv = document.createElement('div');
+            msgDiv.className = 'chat-message';
+            msgDiv.innerHTML = `<strong>${message.playerName}:</strong> ${message.text}`;
+            chatMessages.appendChild(msgDiv);
+            chatMessages.scrollTop = chatMessages.scrollHeight;
+        });
+
+        // Session management events
+        socket.on('uno-session-created', (data) => {
+            sessionToken = data.sessionToken;
+            localStorage.setItem(SESSION_TOKEN_KEY, sessionToken);
+            console.log('Session created:', sessionToken);
+        });
+
+        socket.on('uno-reconnected', (data) => {
+            sessionToken = data.sessionToken;
+            localStorage.setItem(SESSION_TOKEN_KEY, sessionToken);
+            console.log('Reconnected successfully');
+            showNotification('✅ Reconectado exitosamente', 'success');
+        });
+
+        socket.on('uno-kicked', (data) => {
+            localStorage.removeItem(SESSION_TOKEN_KEY);
+            showNotification(data.message, 'error');
+            setTimeout(() => {
+                window.location.reload();
+            }, 2000);
+        });
+
+        // Notification system
+        function showNotification(text, type = 'info') {
+            const notification = document.getElementById('notification');
+            const notificationText = document.getElementById('notificationText');
+
+            notificationText.textContent = text;
+            notification.className = `notification ${type}`;
+            notification.classList.remove('hidden');
+
+            setTimeout(() => {
+                notification.classList.add('hidden');
+            }, 3000);
+        }
     </script>
 </body>
 

@@ -216,14 +216,21 @@ function resetBingoGame() {
 let unoState = {
   deck: [],
   discardPile: [],
-  players: [], // { id, name, hand: [] }
+  players: [], // { id, name, hand: [], connected: true, sessionToken, lastSeen }
   currentPlayerIndex: 0,
   direction: 1, // 1 for clockwise, -1 for counter-clockwise
   status: 'waiting', // waiting, playing, ended
   winner: null,
   wildColor: null,
-  qrCodeUrl: ''
+  qrCodeUrl: '',
+  chatMessages: [], // Store chat history
+  drawStack: 0 // Accumulated +2/+4 cards
 };
+
+// Generate unique session token
+function generateSessionToken() {
+  return `session-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
+}
 
 function createUnoDeck() {
   const colors = ['red', 'blue', 'green', 'yellow'];
@@ -265,7 +272,9 @@ function resetUnoGame(keepPlayers = false) {
     status: 'waiting',
     winner: null,
     wildColor: null,
-    qrCodeUrl: unoState.qrCodeUrl
+    qrCodeUrl: unoState.qrCodeUrl,
+    chatMessages: [],
+    drawStack: 0
   };
 
   // Generate QR code for UNO
@@ -425,21 +434,47 @@ io.on('connection', (socket) => {
   // --- UNO Event Handlers ---
   socket.on('uno-join', (data) => {
     const playerName = data?.playerName || 'Jugador UNO';
-    const player = {
-      id: socket.id,
-      name: playerName,
-      hand: []
-    };
+    const sessionToken = data?.sessionToken;
 
-    // Check if player already joined
-    const existingPlayer = unoState.players.find(p => p.id === socket.id);
-    if (existingPlayer) {
-    } else {
-      unoState.players.push(player);
+    // Try to find existing player by session token (RECONNECTION)
+    let player = null;
+    if (sessionToken) {
+      player = unoState.players.find(p => p.sessionToken === sessionToken);
+
+      if (player) {
+        // RECONNECTION - update socket ID and status
+        console.log(`Player ${player.name} reconnected with token ${sessionToken}`);
+        player.id = socket.id;
+        player.connected = true;
+        player.lastSeen = Date.now();
+
+        sendUnoStateUpdate();
+        socket.emit('uno-your-hand', player.hand);
+        socket.emit('uno-reconnected', {
+          sessionToken: player.sessionToken,
+          message: '¡Reconectado exitosamente!'
+        });
+        return;
+      }
     }
 
+    // NEW CONNECTION - create new player
+    const newSessionToken = generateSessionToken();
+    player = {
+      id: socket.id,
+      name: playerName,
+      hand: [],
+      connected: true,
+      sessionToken: newSessionToken,
+      lastSeen: Date.now()
+    };
+
+    unoState.players.push(player);
     sendUnoStateUpdate();
     socket.emit('uno-your-hand', player.hand);
+    socket.emit('uno-session-created', {
+      sessionToken: newSessionToken
+    });
   });
 
   socket.on('uno-state-request', () => {
@@ -489,13 +524,24 @@ io.on('connection', (socket) => {
     const card = player.hand[cardIndex];
     const topCard = unoState.discardPile[unoState.discardPile.length - 1];
 
-    // Check if card matches
-    const isColorMatch = card.color === topCard.color || card.color === unoState.wildColor;
-    const isValueMatch = card.value === topCard.value;
-    const isWild = card.color === 'wild';
+    // Special rule: if drawStack > 0, only +2 or +4 can be played
+    if (unoState.drawStack > 0) {
+      if (card.value !== '+2' && card.value !== '+4') {
+        return socket.emit('error', {
+          message: `Debes jugar un +2 o +4, o robar ${unoState.drawStack} cartas.`
+        });
+      }
+    }
 
-    if (!isColorMatch && !isValueMatch && !isWild) {
-      return socket.emit('error', { message: 'La carta no coincide con el color o valor.' });
+    // Check if card matches (skip if drawStack active and card is +2/+4)
+    if (unoState.drawStack === 0) {
+      const isColorMatch = card.color === topCard.color || card.color === unoState.wildColor;
+      const isValueMatch = card.value === topCard.value;
+      const isWild = card.color === 'wild';
+
+      if (!isColorMatch && !isValueMatch && !isWild) {
+        return socket.emit('error', { message: 'La carta no coincide con el color o valor.' });
+      }
     }
 
     // Play card
@@ -510,25 +556,27 @@ io.on('connection', (socket) => {
       unoState.direction *= -1;
       if (unoState.players.length === 2) nextTurn();
     } else if (card.value === '+2') {
+      unoState.drawStack += 2;
       nextTurn();
-      const nextPlayer = unoState.players[unoState.currentPlayerIndex];
-      nextPlayer.hand.push(...unoState.deck.splice(0, 2));
-      io.to(nextPlayer.id).emit('uno-your-hand', nextPlayer.hand);
     } else if (card.value === '+4') {
-      nextTurn();
-      const nextPlayer = unoState.players[unoState.currentPlayerIndex];
-      nextPlayer.hand.push(...unoState.deck.splice(0, 4));
-      io.to(nextPlayer.id).emit('uno-your-hand', nextPlayer.hand);
+      unoState.drawStack += 4;
+      // Wild color selection will happen via uno-wild-color event
+      // Don't advance turn yet
     }
 
     // Check for win
     if (player.hand.length === 0) {
       unoState.status = 'ended';
       unoState.winner = player.name;
+      unoState.drawStack = 0; // Reset draw stack
       io.emit('uno-game-over', { winner: player.name });
     } else {
-      if (!isWild) nextTurn();
-      // If wild, wait for uno-wild-color
+      // Only advance turn if not a +4 wild (waiting for color selection)
+      if (card.value !== '+4' && card.value !== 'Wild') {
+        if (card.value !== 'Skip' && card.value !== '+2' && card.value !== 'Reverse') {
+          nextTurn();
+        }
+      }
     }
 
     socket.emit('uno-your-hand', player.hand);
@@ -541,13 +589,23 @@ io.on('connection', (socket) => {
       return socket.emit('error', { message: 'No es tu turno.' });
     }
 
-    if (unoState.deck.length === 0) {
+    // Determine how many cards to draw
+    const cardsToDraw = unoState.drawStack > 0 ? unoState.drawStack : 1;
+
+    // Check if we need to reshuffle
+    if (unoState.deck.length < cardsToDraw) {
       const topCard = unoState.discardPile.pop();
       unoState.deck = shuffle([...unoState.discardPile]);
       unoState.discardPile = [topCard];
     }
 
-    player.hand.push(unoState.deck.pop());
+    // Draw cards
+    const drawnCards = unoState.deck.splice(0, Math.min(cardsToDraw, unoState.deck.length));
+    player.hand.push(...drawnCards);
+
+    // Reset draw stack after drawing
+    unoState.drawStack = 0;
+
     socket.emit('uno-your-hand', player.hand);
     nextTurn();
     sendUnoStateUpdate();
@@ -559,16 +617,98 @@ io.on('connection', (socket) => {
     sendUnoStateUpdate();
   });
 
+  socket.on('uno-chat-message', (data) => {
+    const player = unoState.players.find(p => p.id === socket.id);
+    if (!player) return;
+
+    const message = {
+      playerName: player.name,
+      text: data.text.substring(0, 200), // Limit message length
+      timestamp: Date.now()
+    };
+
+    unoState.chatMessages.push(message);
+
+    // Keep only last 50 messages
+    if (unoState.chatMessages.length > 50) {
+      unoState.chatMessages.shift();
+    }
+
+    io.emit('uno-chat-update', message);
+  });
+
   function nextTurn() {
-    unoState.currentPlayerIndex = (unoState.currentPlayerIndex + unoState.direction + unoState.players.length) % unoState.players.length;
+    let attempts = 0;
+    const maxAttempts = unoState.players.length;
+
+    do {
+      unoState.currentPlayerIndex = (unoState.currentPlayerIndex + unoState.direction + unoState.players.length) % unoState.players.length;
+      attempts++;
+
+      // Break if we found a connected player or if we've checked all players
+      if (unoState.players[unoState.currentPlayerIndex].connected || attempts >= maxAttempts) {
+        break;
+      }
+    } while (attempts < maxAttempts);
   }
+
+  socket.on('uno-kick-player', (data) => {
+    const playerIdToKick = data?.playerId;
+    if (!playerIdToKick) return;
+
+    const playerIndex = unoState.players.findIndex(p => p.id === playerIdToKick);
+    if (playerIndex === -1) return;
+
+    const kickedPlayer = unoState.players[playerIndex];
+    console.log(`Kicking player: ${kickedPlayer.name}`);
+
+    // Notify the player they were kicked
+    io.to(kickedPlayer.id).emit('uno-kicked', {
+      message: 'Has sido expulsado del juego'
+    });
+
+    // If it's the kicked player's turn, advance turn before removing
+    if (unoState.currentPlayerIndex === playerIndex) {
+      nextTurn();
+    }
+
+    // Remove the player
+    unoState.players.splice(playerIndex, 1);
+
+    // Adjust current player index if needed
+    if (unoState.currentPlayerIndex >= unoState.players.length) {
+      unoState.currentPlayerIndex = 0;
+    }
+
+    // Check if game should end (less than 2 players)
+    if (unoState.players.length < 2 && unoState.status === 'playing') {
+      unoState.status = 'waiting';
+      io.emit('uno-game-over', { winner: unoState.players[0]?.name || 'Nadie', reason: 'No hay suficientes jugadores' });
+    }
+
+    sendUnoStateUpdate();
+  });
 
   socket.on('disconnect', () => {
     console.log(`Client disconnected: ${socket.id}`);
 
-    // Remove from UNO players if not started
-    if (unoState.status === 'waiting') {
-      unoState.players = unoState.players.filter(p => p.id !== socket.id);
+    const player = unoState.players.find(p => p.id === socket.id);
+
+    if (player) {
+      if (unoState.status === 'waiting') {
+        // Remove completely if game hasn't started
+        unoState.players = unoState.players.filter(p => p.id !== socket.id);
+      } else if (unoState.status === 'playing') {
+        // Mark as disconnected and update timestamp for reconnection
+        player.connected = false;
+        player.lastSeen = Date.now();
+        console.log(`Player ${player.name} disconnected, waiting for reconnection...`);
+
+        // If it's their turn, skip to next player
+        if (unoState.players[unoState.currentPlayerIndex].id === socket.id) {
+          nextTurn();
+        }
+      }
       sendUnoStateUpdate();
     }
   });
@@ -576,12 +716,20 @@ io.on('connection', (socket) => {
 
 function sendUnoStateUpdate() {
   io.emit('uno-state-update', {
-    players: unoState.players.map(p => ({ id: p.id, name: p.name, cardCount: p.hand.length })),
+    players: unoState.players.map(p => ({
+      id: p.id,
+      name: p.name,
+      cardCount: p.hand.length,
+      connected: p.connected,
+      lastSeen: p.lastSeen  // For showing time since disconnect
+    })),
     status: unoState.status,
     currentPlayer: unoState.players[unoState.currentPlayerIndex]?.name,
     topCard: unoState.discardPile[unoState.discardPile.length - 1],
     wildColor: unoState.wildColor,
-    qrCodeUrl: unoState.qrCodeUrl
+    qrCodeUrl: unoState.qrCodeUrl,
+    chatMessages: unoState.chatMessages.slice(-15), // Last 15 messages
+    drawStack: unoState.drawStack
   });
 }
 
@@ -598,6 +746,46 @@ QRCode.toDataURL(playerUrl, (err, url) => {
 // Initialize games
 resetBingoGame();
 resetUnoGame();
+
+// Automatic cleanup of disconnected players (5 minute timeout)
+const DISCONNECT_TIMEOUT = 5 * 60 * 1000; // 5 minutes
+
+setInterval(() => {
+  if (unoState.status === 'playing') {
+    const now = Date.now();
+    const toRemove = [];
+
+    unoState.players.forEach((player, index) => {
+      if (!player.connected && (now - player.lastSeen) > DISCONNECT_TIMEOUT) {
+        console.log(`Removing player ${player.name} due to timeout (${Math.floor((now - player.lastSeen) / 1000)}s disconnected)`);
+        toRemove.push(index);
+      }
+    });
+
+    // Remove from back to front to avoid index issues
+    toRemove.reverse().forEach(index => {
+      unoState.players.splice(index, 1);
+    });
+
+    if (toRemove.length > 0) {
+      // Adjust currentPlayerIndex if needed
+      if (unoState.currentPlayerIndex >= unoState.players.length) {
+        unoState.currentPlayerIndex = 0;
+      }
+
+      // Check if there are enough players to continue
+      if (unoState.players.length < 2 && unoState.status === 'playing') {
+        unoState.status = 'waiting';
+        io.emit('uno-game-over', {
+          winner: unoState.players[0]?.name || 'Nadie',
+          reason: 'No hay suficientes jugadores'
+        });
+      }
+
+      sendUnoStateUpdate();
+    }
+  }
+}, 30000); // Check every 30 seconds
 
 server.listen(PORT, () => {
   console.log(`🎰 Bingo Server running on ${BASE_URL}`);
