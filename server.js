@@ -349,6 +349,11 @@ io.on('connection', (socket) => {
       card.playerName = playerName;
       gameState.cards.set(card.serialNumber, card);
       gameState.playerSessions.set(socket.id, card.serialNumber);
+
+      // Notify moderators of new player
+      io.emit('player-joined', {
+        activeCards: gameState.cards.size
+      });
     }
 
     socket.emit('card-assigned', {
@@ -368,6 +373,53 @@ io.on('connection', (socket) => {
     } else {
       socket.emit('error', { message: 'All balls have been drawn!' });
     }
+  });
+
+  // Handle game reset
+  socket.on('reset-game', () => {
+    resetBingoGame();
+    io.emit('game-reset', {
+      gameId: gameState.gameId,
+      qrCodeUrl: gameState.qrCodeUrl
+    });
+    console.log('Game reset by moderator');
+  });
+
+  // Handle card validation
+  socket.on('validate-card', (data) => {
+    const validation = validateCard(data.serialNumber);
+    if (validation) {
+      socket.emit('card-validated', validation);
+    } else {
+      socket.emit('error', { message: 'Cartón no encontrado o inválido' });
+    }
+  });
+
+  // Handle line announcement
+  socket.on('announce-line', (data) => {
+    io.emit('line-announced', {
+      playerName: data.playerName,
+      serialNumber: data.serialNumber,
+      lines: data.lines
+    });
+    console.log(`Line announced for player ${data.playerName} - Serial: ${data.serialNumber}`);
+  });
+
+  // Handle bingo announcement
+  socket.on('announce-bingo', (data) => {
+    io.emit('bingo-announced', {
+      playerName: data.playerName,
+      serialNumber: data.serialNumber
+    });
+    console.log(`BINGO announced for player ${data.playerName} - Serial: ${data.serialNumber}`);
+  });
+
+  // Send game state to moderator on connection
+  socket.emit('game-state', {
+    gameId: gameState.gameId,
+    drawnBalls: gameState.drawnBalls,
+    qrCodeUrl: gameState.qrCodeUrl,
+    activeCards: gameState.cards.size
   });
 
   // --- UNO Event Handlers ---

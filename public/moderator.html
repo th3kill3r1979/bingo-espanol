@@ -207,6 +207,12 @@
         qrCodeEl.src = data.qrCodeUrl;
       }
 
+      // Update active cards count
+      const activeCardsEl = document.getElementById('activeCards');
+      if (activeCardsEl && data.activeCards !== undefined) {
+        activeCardsEl.textContent = data.activeCards;
+      }
+
       updateBallHistory();
       updateStats();
     });
@@ -258,7 +264,22 @@
       lastBallContainer.classList.add('hidden');
       validationResult.classList.add('hidden');
       serialInput.value = '';
+
+      // Reset active cards count
+      const activeCardsEl = document.getElementById('activeCards');
+      if (activeCardsEl) {
+        activeCardsEl.textContent = '0';
+      }
+
       updateStats();
+    });
+
+    // Player joined event
+    socket.on('player-joined', (data) => {
+      const activeCardsEl = document.getElementById('activeCards');
+      if (activeCardsEl && data.activeCards !== undefined) {
+        activeCardsEl.textContent = data.activeCards;
+      }
     });
 
     // Card validated event
