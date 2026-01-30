@@ -179,58 +179,228 @@
     </section>
 
     <!-- BINGO & UNO SELECTION -->
-    <section id="games" class="py-24 bg-gray-900">
-        <div class="container mx-auto px-6">
-            <div class="grid grid-cols-1 lg:grid-cols-2 gap-12">
-                <!-- BINGO CARD -->
-                <div
-                    class="bg-gradient-to-br from-indigo-900 to-purple-800 rounded-[3rem] p-12 shadow-2xl border-2 border-white/10 hover:border-accent/50 transition-all duration-500 group overflow-hidden relative">
-                    <div class="relative z-10">
+    <section id="games" class="relative py-32 bg-gray-900 overflow-hidden">
+        <!-- Animated Background -->
+        <div class="absolute inset-0 opacity-30">
+            <div class="absolute top-20 left-20 w-96 h-96 bg-purple-500 rounded-full blur-[120px] animate-pulse"></div>
+            <div class="absolute bottom-20 right-20 w-96 h-96 bg-orange-500 rounded-full blur-[120px] animate-pulse"
+                style="animation-delay: 1s;"></div>
+        </div>
+
+        <div class="container mx-auto px-6 relative z-10">
+            <!-- Section Header -->
+            <div class="text-center mb-20 fade-in">
+                <div class="inline-block mb-6">
+                    <span
+                        class="px-6 py-2 bg-gradient-to-r from-purple-500/20 to-orange-500/20 border border-white/20 rounded-full text-sm font-bold uppercase tracking-wider backdrop-blur-sm">
+                        Elige tu Aventura
+                    </span>
+                </div>
+                <h2 class="font-display font-black text-6xl md:text-7xl mb-6 leading-none">
+                    <span
+                        class="bg-gradient-to-r from-purple-400 via-pink-400 to-orange-400 bg-clip-text text-transparent">
+                        Dos Mundos Epic0os
+                    </span>
+                </h2>
+                <p class="text-xl text-gray-400 max-w-2xl mx-auto">
+                    Selecciona tu experiencia de juego favorita y sumérgete en la acción
+                </p>
+            </div>
+
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-12 max-w-7xl mx-auto">
+                <!-- BINGO CARD - ULTRA PREMIUM -->
+                <div class="group perspective-1000">
+                    <div class="relative transform transition-all duration-700 hover:scale-[1.02] hover:-rotate-1">
+                        <!-- Glow Effect -->
                         <div
-                            class="w-20 h-20 bg-accent rounded-2xl flex items-center justify-center text-4xl mb-8 shadow-lg transform group-hover:rotate-12 transition-transform">
-                            <i class="fas fa-ticket-alt text-gray-900"></i>
+                            class="absolute -inset-1 bg-gradient-to-r from-purple-600 via-indigo-600 to-blue-600 rounded-[4rem] blur-2xl opacity-0 group-hover:opacity-75 transition-opacity duration-700 animate-pulse">
                         </div>
-                        <h3 class="text-5xl font-black mb-6 italic tracking-tighter">BINGO ESPAÑOL</h3>
-                        <p class="text-xl text-gray-300 mb-10 leading-relaxed">El clásico de 90 bolas con cartones
-                            automáticos, validación instantánea y locutor profesional.</p>
-                        <div class="grid grid-cols-2 gap-4 mb-10">
-                            <div class="bg-white/5 p-4 rounded-2xl flex items-center gap-3">
-                                <i class="fas fa-check text-accent"></i> 90 Bolas
+
+                        <!-- Main Card -->
+                        <div
+                            class="relative bg-gradient-to-br from-indigo-950 via-purple-900 to-indigo-950 rounded-[3.5rem] p-1 overflow-hidden">
+                            <!-- Animated Border -->
+                            <div
+                                class="absolute inset-0 rounded-[3.5rem] bg-gradient-to-r from-purple-500 via-pink-500 to-indigo-500 opacity-50 group-hover:opacity-100 transition-opacity blur-sm">
                             </div>
-                            <div class="bg-white/5 p-4 rounded-2xl flex items-center gap-3">
-                                <i class="fas fa-check text-accent"></i> Sincronizado
+
+                            <!-- Inner Content -->
+                            <div
+                                class="relative bg-gradient-to-br from-indigo-900/95 via-purple-900/95 to-indigo-950/95 backdrop-blur-xl rounded-[3.3rem] p-12 overflow-hidden">
+                                <!-- Floating Particles -->
+                                <div
+                                    class="absolute top-10 right-10 w-32 h-32 bg-purple-400/10 rounded-full blur-3xl animate-pulse">
+                                </div>
+                                <div class="absolute bottom-10 left-10 w-40 h-40 bg-indigo-400/10 rounded-full blur-3xl animate-pulse"
+                                    style="animation-delay: 0.5s;"></div>
+
+                                <!-- Content -->
+                                <div class="relative z-10">
+                                    <!-- Icon -->
+                                    <div class="relative w-28 h-28 mb-8">
+                                        <div
+                                            class="absolute inset-0 bg-gradient-to-br from-yellow-400 to-orange-500 rounded-3xl blur-xl opacity-75 group-hover:opacity-100 animate-pulse">
+                                        </div>
+                                        <div
+                                            class="relative w-full h-full bg-gradient-to-br from-yellow-400 via-orange-400 to-orange-500 rounded-3xl flex items-center justify-center shadow-2xl transform group-hover:rotate-12 group-hover:scale-110 transition-all duration-500">
+                                            <i class="fas fa-ticket-alt text-5xl text-gray-900"></i>
+                                        </div>
+                                    </div>
+
+                                    <!-- Title -->
+                                    <h3 class="text-6xl font-black mb-6 tracking-tight">
+                                        <span
+                                            class="bg-gradient-to-r from-white via-purple-200 to-white bg-clip-text text-transparent">
+                                            BINGO
+                                        </span>
+                                        <br>
+                                        <span
+                                            class="bg-gradient-to-r from-yellow-300 via-orange-300 to-yellow-300 bg-clip-text text-transparent italic">
+                                            ESPAÑOL
+                                        </span>
+                                    </h3>
+
+                                    <!-- Description -->
+                                    <p class="text-lg text-purple-100/80 mb-8 leading-relaxed font-medium">
+                                        El clásico de 90 bolas con cartones automáticos, validación instantánea y
+                                        locutor profesional.
+                                    </p>
+
+                                    <!-- Features -->
+                                    <div class="grid grid-cols-2 gap-4 mb-10">
+                                        <div
+                                            class="bg-white/5 backdrop-blur-sm p-4 rounded-2xl border border-purple-300/20 flex items-center gap-3 group/item hover:bg-white/10 transition-all">
+                                            <div
+                                                class="w-10 h-10 bg-gradient-to-br from-yellow-400 to-orange-500 rounded-xl flex items-center justify-center">
+                                                <i class="fas fa-dice text-gray-900 text-sm"></i>
+                                            </div>
+                                            <span class="font-bold">90 Bolas</span>
+                                        </div>
+                                        <div
+                                            class="bg-white/5 backdrop-blur-sm p-4 rounded-2xl border border-purple-300/20 flex items-center gap-3 group/item hover:bg-white/10 transition-all">
+                                            <div
+                                                class="w-10 h-10 bg-gradient-to-br from-yellow-400 to-orange-500 rounded-xl flex items-center justify-center">
+                                                <i class="fas fa-sync text-gray-900 text-sm"></i>
+                                            </div>
+                                            <span class="font-bold">Tiempo Real</span>
+                                        </div>
+                                    </div>
+
+                                    <!-- CTA Button -->
+                                    <a href="/moderator" class="group/btn relative inline-block w-full">
+                                        <div
+                                            class="absolute -inset-1 bg-gradient-to-r from-yellow-400 via-orange-400 to-yellow-400 rounded-2xl blur-lg opacity-75 group-hover/btn:opacity-100 transition-opacity animate-pulse">
+                                        </div>
+                                        <div
+                                            class="relative px-10 py-6 bg-gradient-to-r from-yellow-400 via-orange-400 to-yellow-500 rounded-2xl text-center font-black text-2xl text-gray-900 shadow-2xl transform group-hover/btn:scale-[1.02] transition-all">
+                                            <span class="inline-flex items-center gap-3">
+                                                ABRIR BINGO
+                                                <i
+                                                    class="fas fa-arrow-right group-hover/btn:translate-x-2 transition-transform"></i>
+                                            </span>
+                                        </div>
+                                    </a>
+                                </div>
                             </div>
                         </div>
-                        <a href="/moderator"
-                            class="inline-block px-12 py-5 bg-accent text-gray-900 font-bold text-xl rounded-full hover:scale-105 transition-all shadow-xl">
-                            ABRIR BINGO
-                        </a>
                     </div>
                 </div>
 
-                <!-- UNO CARD -->
-                <div
-                    class="bg-gradient-to-br from-red-900 to-orange-800 rounded-[3rem] p-12 shadow-2xl border-2 border-white/10 hover:border-yellow-400/50 transition-all duration-500 group overflow-hidden relative">
-                    <div class="relative z-10">
+                <!-- UNO CARD - ULTRA PREMIUM -->
+                <div class="group perspective-1000">
+                    <div class="relative transform transition-all duration-700 hover:scale-[1.02] hover:rotate-1">
+                        <!-- Glow Effect -->
                         <div
-                            class="w-20 h-20 bg-yellow-400 rounded-2xl flex items-center justify-center text-4xl mb-8 shadow-lg transform group-hover:-rotate-12 transition-transform">
-                            <i class="fas fa-bolt text-gray-900"></i>
+                            class="absolute -inset-1 bg-gradient-to-r from-red-600 via-orange-600 to-yellow-600 rounded-[4rem] blur-2xl opacity-0 group-hover:opacity-75 transition-opacity duration-700 animate-pulse">
                         </div>
-                        <h3 class="text-5xl font-black mb-6 italic tracking-tighter">UNO DIGITAL</h3>
-                        <p class="text-xl text-gray-300 mb-10 leading-relaxed">El adictivo juego de cartas. Juega con
-                            amigos desde cualquier lugar con cartas especiales y acción rápida.</p>
-                        <div class="grid grid-cols-2 gap-4 mb-10">
-                            <div class="bg-white/5 p-4 rounded-2xl flex items-center gap-3">
-                                <i class="fas fa-check text-yellow-400"></i> +2 y +4
+
+                        <!-- Main Card -->
+                        <div
+                            class="relative bg-gradient-to-br from-red-950 via-orange-900 to-red-950 rounded-[3.5rem] p-1 overflow-hidden">
+                            <!-- Animated Border -->
+                            <div
+                                class="absolute inset-0 rounded-[3.5rem] bg-gradient-to-r from-red-500 via-yellow-500 to-orange-500 opacity-50 group-hover:opacity-100 transition-opacity blur-sm">
                             </div>
-                            <div class="bg-white/5 p-4 rounded-2xl flex items-center gap-3">
-                                <i class="fas fa-check text-yellow-400"></i> Wild Cards
+
+                            <!-- Inner Content -->
+                            <div
+                                class="relative bg-gradient-to-br from-red-900/95 via-orange-900/95 to-red-950/95 backdrop-blur-xl rounded-[3.3rem] p-12 overflow-hidden">
+                                <!-- Floating Particles -->
+                                <div
+                                    class="absolute top-10 right-10 w-32 h-32 bg-yellow-400/10 rounded-full blur-3xl animate-pulse">
+                                </div>
+                                <div class="absolute bottom-10 left-10 w-40 h-40 bg-red-400/10 rounded-full blur-3xl animate-pulse"
+                                    style="animation-delay: 0.5s;"></div>
+
+                                <!-- Content -->
+                                <div class="relative z-10">
+                                    <!-- Icon -->
+                                    <div class="relative w-28 h-28 mb-8">
+                                        <div
+                                            class="absolute inset-0 bg-gradient-to-br from-yellow-300 to-yellow-500 rounded-3xl blur-xl opacity-75 group-hover:opacity-100 animate-pulse">
+                                        </div>
+                                        <div
+                                            class="relative w-full h-full bg-gradient-to-br from-yellow-300 via-yellow-400 to-yellow-500 rounded-3xl flex items-center justify-center shadow-2xl transform group-hover:-rotate-12 group-hover:scale-110 transition-all duration-500">
+                                            <i class="fas fa-bolt text-5xl text-red-900"></i>
+                                        </div>
+                                    </div>
+
+                                    <!-- Title -->
+                                    <h3 class="text-6xl font-black mb-6 tracking-tight">
+                                        <span
+                                            class="bg-gradient-to-r from-white via-orange-200 to-white bg-clip-text text-transparent">
+                                            UNO
+                                        </span>
+                                        <br>
+                                        <span
+                                            class="bg-gradient-to-r from-yellow-300 via-yellow-400 to-yellow-300 bg-clip-text text-transparent italic">
+                                            DIGITAL
+                                        </span>
+                                    </h3>
+
+                                    <!-- Description -->
+                                    <p class="text-lg text-orange-100/80 mb-8 leading-relaxed font-medium">
+                                        El adictivo juego de cartas. Juega con amigos desde cualquier lugar con cartas
+                                        especiales y acción rápida.
+                                    </p>
+
+                                    <!-- Features -->
+                                    <div class="grid grid-cols-2 gap-4 mb-10">
+                                        <div
+                                            class="bg-white/5 backdrop-blur-sm p-4 rounded-2xl border border-yellow-300/20 flex items-center gap-3 group/item hover:bg-white/10 transition-all">
+                                            <div
+                                                class="w-10 h-10 bg-gradient-to-br from-yellow-300 to-yellow-500 rounded-xl flex items-center justify-center">
+                                                <i class="fas fa-layer-group text-red-900 text-sm"></i>
+                                            </div>
+                                            <span class="font-bold">+2 y +4</span>
+                                        </div>
+                                        <div
+                                            class="bg-white/5 backdrop-blur-sm p-4 rounded-2xl border border-yellow-300/20 flex items-center gap-3 group/item hover:bg-white/10 transition-all">
+                                            <div
+                                                class="w-10 h-10 bg-gradient-to-br from-yellow-300 to-yellow-500 rounded-xl flex items-center justify-center">
+                                                <i class="fas fa-magic text-red-900 text-sm"></i>
+                                            </div>
+                                            <span class="font-bold">Wild Cards</span>
+                                        </div>
+                                    </div>
+
+                                    <!-- CTA Button -->
+                                    <a href="/unogame" class="group/btn relative inline-block w-full">
+                                        <div
+                                            class="absolute -inset-1 bg-gradient-to-r from-yellow-300 via-yellow-400 to-yellow-300 rounded-2xl blur-lg opacity-75 group-hover/btn:opacity-100 transition-opacity animate-pulse">
+                                        </div>
+                                        <div
+                                            class="relative px-10 py-6 bg-gradient-to-r from-yellow-300 via-yellow-400 to-yellow-500 rounded-2xl text-center font-black text-2xl text-red-900 shadow-2xl transform group-hover/btn:scale-[1.02] transition-all">
+                                            <span class="inline-flex items-center gap-3">
+                                                ABRIR UNO
+                                                <i
+                                                    class="fas fa-arrow-right group-hover/btn:translate-x-2 transition-transform"></i>
+                                            </span>
+                                        </div>
+                                    </a>
+                                </div>
                             </div>
                         </div>
-                        <a href="/unogame"
-                            class="inline-block px-12 py-5 bg-yellow-400 text-gray-900 font-bold text-xl rounded-full hover:scale-105 transition-all shadow-xl">
-                            ABRIR UNO
-                        </a>
                     </div>
                 </div>
             </div>
